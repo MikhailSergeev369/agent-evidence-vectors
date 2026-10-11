@@ -130,6 +130,7 @@ from agent_evidence_vectors import (
     a2ajcs,
     anchoredchain,
     auditrecord,
+    changeadmission,
     gradefloor,
     mcpowasp,
     observedeffect,
@@ -3750,6 +3751,7 @@ def _run_non_reference_suite(
         sourcecoverage.SUITE,
         anchoredchain.SUITE,
         gradefloor.SUITE,
+        changeadmission.SUITE,
         a2ajcs.SUITE,
         mcpowasp.SUITE,
     )
@@ -3760,6 +3762,7 @@ def _run_non_reference_suite(
     full_reader = {
         anchoredchain.SUITE: anchoredchain.run,
         gradefloor.SUITE: gradefloor.run,
+        changeadmission.SUITE: changeadmission.run,
         sourcecoverage.SUITE: sourcecoverage.run_or_refuse,
         a2ajcs.SUITE: a2ajcs.run,
     }.get(suite)
