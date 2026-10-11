@@ -29,6 +29,17 @@ inputs:
       `agent-evidence-vectors --list-corpora` for every name the release carries.
     required: false
     default: "vectors"
+  vectors:
+    description: >-
+      Path, relative to the workspace, of a corpus directory to replay in place
+      of a shipped corpus: a directory holding a MANIFEST.json, such as a
+      checkout of a2a-tck's `conformance-vectors/a2a-jcs-v01` at the commit a
+      workflow pins. When it is set, `corpus` is not used. The report carries
+      the corpus digest that directory's MANIFEST recomputes to, so the
+      workflow can hold the run to its own pin rather than to whichever copy
+      this action's release carries.
+    required: false
+    default: ""
   tag:
     description: >-
       Release of the corpus to replay, as a git tag such as `v0.11.1`. The
@@ -128,13 +139,18 @@ runs:
       env:
         VERIFIER: ${{ inputs.verifier }}
         CORPUS: ${{ inputs.corpus }}
+        VECTORS: ${{ inputs.vectors }}
         REPORT: ${{ inputs.report-path }}
       run: |
         # The exit status is kept rather than acted on here so the report and
         # the summary are produced for a failing run too; a red run with no
         # report says nothing about which vector disagreed.
+        source_args=(--corpus "$CORPUS")
+        if [ -n "$VECTORS" ]; then
+          source_args=(--vectors "$VECTORS")
+        fi
         status=0
-        agent-evidence-vectors --corpus "$CORPUS" --verifier "$VERIFIER" --report "$REPORT" || status=$?
+        agent-evidence-vectors "${source_args[@]}" --verifier "$VERIFIER" --report "$REPORT" || status=$?
         echo "report=$REPORT" >> "$GITHUB_OUTPUT"
         echo "status=$status" >> "$GITHUB_OUTPUT"
 
@@ -145,7 +161,7 @@ runs:
       env:
         REPORT: ${{ steps.replay.outputs.report }}
         STATUS: ${{ steps.replay.outputs.status }}
-        CORPUS: ${{ inputs.corpus }}
+        CORPUS: ${{ inputs.vectors || inputs.corpus }}
       # The body is scripts/action-summary.py in this action's own checkout
       # rather than a heredoc here, so the local workflow mirror can run the
       # same code and produce the same outputs. A mirror that reimplemented

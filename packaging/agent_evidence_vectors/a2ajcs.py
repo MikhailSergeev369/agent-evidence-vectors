@@ -230,7 +230,7 @@ def load(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]], list[str]]:
             continue
         if hashlib.sha256(body).hexdigest() != entry["sha256"]:
             findings.append(f"{entry['path']} does not match its manifest sha256")
-        vectors.append(json.loads(body))
+        vectors.append(read_vector(body))
     on_disk = {
         p.relative_to(root).as_posix() for p in root.glob("*/*.json") if p.parent.name != "tests"
     }
@@ -244,16 +244,51 @@ def load(root: Path) -> tuple[dict[str, Any], list[dict[str, Any]], list[str]]:
     return manifest, vectors, findings
 
 
+class NumberToken(str):
+    """A JSON number exactly as the vector file spells it."""
+
+
+def read_vector(body: bytes) -> dict[str, Any]:
+    """Parse one vector file, keeping every number token as written.
+
+    Parsed into Python numbers, the integer ``-0`` becomes ``0`` and the token
+    a canonicalizer had to handle never reaches the verifier: A5-019 exists for
+    an implementation that copies ``-0`` through, and that one would pass.
+    """
+    vector: dict[str, Any] = json.loads(body, parse_int=NumberToken, parse_float=NumberToken)
+    return vector
+
+
 def input_text(vector: dict[str, Any]) -> str:
     """The vector's input as JSON text: ``input_raw`` verbatim, or ``input`` serialized.
 
-    ``json.dumps`` writes every double as its shortest round-tripping form and
-    escapes nothing a JSON parser reads differently, so the value a verifier
-    parses is the value the vector holds.
+    Strings are written with ``json.dumps``, which escapes nothing a JSON parser
+    reads differently. Each number is written as the token the vector file
+    holds, so the verifier parses the input the corpus wrote, not Python's
+    reading of it.
     """
     if "input_raw" in vector:
         return str(vector["input_raw"])
-    return json.dumps(vector["input"], ensure_ascii=True, allow_nan=False)
+    tokens: list[str] = []
+    nonce = os.urandom(8).hex()
+
+    def swap(value: Any) -> Any:
+        if isinstance(value, NumberToken):
+            tokens.append(str(value))
+            return f"{nonce}-{len(tokens) - 1}"
+        if isinstance(value, dict):
+            return {key: swap(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [swap(item) for item in value]
+        return value
+
+    text = json.dumps(swap(vector["input"]), ensure_ascii=True, allow_nan=False)
+    for index, token in enumerate(tokens):
+        placeholder = json.dumps(f"{nonce}-{index}")
+        if text.count(placeholder) != 1:
+            raise ValueError(f"number token {token!r} could not be placed in the input text")
+        text = text.replace(placeholder, token)
+    return text
 
 
 def outcome(vector: dict[str, Any], answer: str, produced: bytes | None) -> tuple[str, str]:

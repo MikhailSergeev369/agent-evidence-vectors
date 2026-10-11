@@ -24,6 +24,7 @@ The command invokes your verifier for each vector using the [external-verifier c
 | --- | --- |
 | `verifier` | Required command. Its first token must be on PATH or relative to the workspace. An unavailable verifier or incomplete run fails the job. |
 | `corpus` | Corpus directory; default `vectors`. Use `--list-corpora` to see the installed set and check its [reader route](../reference/corpus-readers.md). |
+| `vectors` | Path of a corpus directory in the workspace, replayed instead of `corpus`. Use it to replay a corpus your workflow checks out and pins itself, such as a2a-tck's `conformance-vectors/a2a-jcs-v01` at a commit; the report carries the digest its MANIFEST recomputes to. |
 | `tag` | Release override. By default the corpus follows the action's own ref. |
 | `artifact-name` | Uploaded report name; default `agent-evidence-vectors-results`. Give separate runs distinct names. |
 | `report-path` | Report path relative to the workspace. |
