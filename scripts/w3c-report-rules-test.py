@@ -17,6 +17,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -281,6 +282,53 @@ def test_a_malformed_snapshot_is_judged_not_crashed() -> None:
         raise AssertionError("the finding does not name robots.disallow")
 
 
+WORKED = "## Worked digests for the digest-encoding members"
+WORKED_BLOCK = re.compile(r"```\n(\( printf .*? \| sha256sum)\n# ([0-9a-f]{64})\n```")
+
+
+def test_the_worked_digests_reproduce_in_a_posix_shell() -> None:
+    """Each worked digest in INDEX.md, run as printed under sh, gives the root its member declares.
+
+    The commands are what a verifier outside this repository copies, so they
+    are run rather than re-derived: a wrong escape in a printf format prints a
+    command that hashes other bytes, and only running it shows that. Every
+    member of a digest-encoding family must have exactly one block.
+    """
+    for tool in ("sh", "openssl", "sha256sum"):
+        if shutil.which(tool) is None:
+            raise AssertionError(f"{tool} is not on PATH, so the worked digests cannot be run")
+    manifest = json.loads((CORPUS / "MANIFEST.json").read_text(encoding="utf-8"))
+    members = {e["id"]: e for e in manifest["vectors"] if e["family"].startswith("w3c-f-jcs-")}
+    _, found, section = (CORPUS / "INDEX.md").read_text(encoding="utf-8").partition(WORKED)
+    if not found:
+        raise AssertionError(f"INDEX.md has no section {WORKED!r}")
+    parts = re.split(r"\n\*\*`(v[0-9a-f]{16})`\*\*", section)
+    blocks = dict(zip(parts[1::2], parts[2::2], strict=True))
+    if sorted(blocks) != sorted(members):
+        raise AssertionError(
+            f"worked digests for {sorted(set(blocks) - set(members))} without a member, "
+            f"members without one: {sorted(set(members) - set(blocks))}"
+        )
+    for vid, body in sorted(blocks.items()):
+        commands = WORKED_BLOCK.findall(body)
+        if len(commands) != 1:
+            raise AssertionError(f"{vid}: {len(commands)} worked digest blocks, want 1")
+        command, printed = commands[0]
+        member = json.loads((CORPUS / members[vid]["file"]).read_text(encoding="utf-8"))
+        declared = member["subject"]["check-set"]["sha256"]
+        if printed != declared:
+            raise AssertionError(
+                f"{vid}: INDEX.md prints {printed}, the member declares {declared}"
+            )
+        proc = subprocess.run(["sh", "-c", command], capture_output=True, text=True, check=False)
+        got = proc.stdout.split()[0] if proc.stdout.split() else ""
+        if proc.returncode != 0 or got != declared:
+            raise AssertionError(
+                f"{vid}: the command gives {got or 'nothing'} (exit {proc.returncode}, "
+                f"{proc.stderr.strip()[:200]}), the member declares {declared}"
+            )
+
+
 def run(cases: list[Callable[[], None]]) -> int:
     failures = 0
     for case in cases:
@@ -301,6 +349,7 @@ if __name__ == "__main__":
         test_rfc9162_sha256_is_the_rfc_9162_tree,
         test_a_declared_encoding_comes_from_the_closed_set,
         test_a_refused_number_names_its_cause_and_token,
+        test_the_worked_digests_reproduce_in_a_posix_shell,
         test_snapshot_member_types_are_read,
         test_run_member_types_are_read,
         test_ledger_tokens_that_are_not_counts_break_the_sum,

@@ -811,7 +811,9 @@ jobs:
       # The v0.1 report reader's rules that no corpus member can pin: a tree
       # shape outside the closed set is refused rather than hashed as another
       # shape, and each registered shape is hashed by the construction its name
-      # denotes, checked against the RFC text written out independently.
+      # denotes, checked against the RFC text written out independently. It also
+      # runs every worked digest INDEX.md prints, under sh with openssl and
+      # sha256sum, and holds each to the root its member declares.
       - name: the v0.1 report reader's tree-shape rules
         run: python3 scripts/w3c-report-rules-test.py
       # One table of JSON documents and the bytes each digest encoding writes

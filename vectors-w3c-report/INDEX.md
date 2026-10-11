@@ -481,3 +481,295 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `vfeb5d1872929ab35` | accept | llm-context-discovery | lcd-f-publisher | LCD-R-010 | none |
 | `vff5545c0760d7544` | accept | agent-run-metrics | arm-f-usage | ARM-R-013 | none |
 | `vff8f75223d6658ef` | reject | llm-context-discovery | lcd-f-publisher | LCD-R-001 | LCD-R-001 |
+
+## Worked digests for the digest-encoding members
+
+Each block recomputes one member's check-set root from nothing but `printf`,
+`openssl` and `sha256sum`. A member carries two checks, and each check is one
+leaf: the bytes `jcs-sha256` writes for it, RFC 8785 under the integer profile.
+The root is the flat construction, SHA-256 over the SHA-256 of each leaf in
+order, and the comment under each command is the `check-set.sha256` the member
+declares. In the leaf bytes, printable ASCII is itself and any other byte is
+written as a POSIX octal escape, so U+007F is `\177`, U+00E9 is `\303\251` and
+U+1F600 is `\360\237\230\200`: RFC 8785 writes them as UTF-8, never as `\u`
+escapes. The commands run in any POSIX shell; where `sha256sum` is missing, use
+`shasum -a 256`.
+
+**`v822c4bed9ba714d3`** (accept, `w3c-f-jcs-u007f`): the root over the leaf with U+007F written as the byte 0x7f, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"delete \177"},"check":"c-u007f","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# fe92923b2a1cdb0f712e0376f2e69c30511cedec57333cea3f5e06c15c9e5df2
+```
+
+**`v60bd06deca6e832d`** (reject, `w3c-f-jcs-u007f`): a root over the leaf with U+007F written as \u007f, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-u007f` switched off:
+
+```
+( printf '{"annotations":{"text":"delete \134u007f"},"check":"c-u007f","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ab3e727343286160d3125b031825a32b52fd40ce4bb425e003b1959718811d15
+```
+
+**`v2f563dc0b6fc9ec8`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+20AC, three bytes of UTF-8 written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\342\202\254"},"check":"c-u20ac","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ca0d6b586510a862453b102da4a47c25796f154c3a183a28d1a054b172beb3ea
+```
+
+**`v392e5b863085868b`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+2028, the line separator ECMAScript once refused raw written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\342\200\250"},"check":"c-u2028","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# d61c64ba947d0d6d3785158bbf68d5a5a4d1c97181e78887f2d23891d84ea172
+```
+
+**`v55772816f872150f`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+00E9, two bytes of UTF-8 written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\303\251"},"check":"c-u00e9","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 5512c1d32b57f1a892e8ba08c94210127f28eef76018cf44221fa6446624e88a
+```
+
+**`v606504b1125a3885`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+1F600, a supplementary-plane character written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\360\237\230\200"},"check":"c-u1f600","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 3122f6fb9b6db83f31e1765df2460a4c31e9d34264adc15acac52c1506b4fe97
+```
+
+**`v3fd6a6a262a72f91`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+00E9, two bytes of UTF-8 written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134u00e9"},"check":"c-u00e9","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 41566def05bd68ea0f54108d4c72f4436c2f4de4d1c461f8bae5321016664107
+```
+
+**`v4193637206138b32`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+1F600, a supplementary-plane character written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134ud83d\134ude00"},"check":"c-u1f600","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 1905f671aa32b5080565a1bc08e160db730c4c5651d2818be22494de1caa6894
+```
+
+**`v5196f1761ea14b2b`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+20AC, three bytes of UTF-8 written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134u20ac"},"check":"c-u20ac","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# af862a9337409b0085f71e59e1bf6d6987107082ef29fa38917f1f591fa25743
+```
+
+**`v8474a83c45f293fc`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+2028, the line separator ECMAScript once refused raw written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134u2028"},"check":"c-u2028","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 0414dddd295e811975c8aef2ef3611d82e97a260e1aa6847b78b00784dca24ff
+```
+
+**`vccb24c478c736bc5`** (accept, `w3c-f-jcs-member-order`): the root over the same names sorted by UTF-16 code unit, which puts U+1F600 first (its lead surrogate is 0xD83D).
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"\360\237\230\200":"U+1F600","\357\254\263":"U+FB33"},"check":"c-member-order","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 1d65402962c1f4e69b8528785d59ebfef5418804b6497c7f1d73c89141fe63fd
+```
+
+**`v9d05fc7c9c249317`** (reject, `w3c-f-jcs-member-order`): a root over member names U+FB33 and U+1F600 sorted by code point, which puts U+FB33 first.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `utf16-member-order` switched off:
+
+```
+( printf '{"annotations":{"\357\254\263":"U+FB33","\360\237\230\200":"U+1F600"},"check":"c-member-order","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 111ec757ffa63d4cc2406347ae29346caf6f35e224195b788c0929195403b4e1
+```
+
+**`v4e8fc1ab4f3fc5b3`** (accept, `w3c-f-jcs-number-value`): the root over the leaf with 1.0 and 1e2 written as 1 and 100, their values.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"hundred":100,"one":1},"check":"c-integral-tokens","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# b54538004454c320169716ff4478156f8d1f3b909cfd011f299a3f8357fee5b9
+```
+
+**`vf3fbd991d8e666a4`** (accept, `w3c-f-jcs-number-value`): the root over the leaf with -0 and -0.0 written as 0, their value, as RFC 8785 writes them.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"zero":0,"zero-fraction":0},"check":"c-negative-zero","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 38eaa15ae7fb4eb3cbd84e05737eb010cfff672d94059ae782a481869bd26796
+```
+
+**`v9ff65c5b03dd074c`** (reject, `w3c-f-jcs-number-value`): a root over the leaf with -0 and -0.0 written as their tokens.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `number-by-value` switched off:
+
+```
+( printf '{"annotations":{"zero":-0,"zero-fraction":-0.0},"check":"c-negative-zero","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ed7f15f63f99a08b8f8cb178a411fee9eb2af9dda5c83f045cbb0657c8bb2dcf
+```
+
+**`vc3fa59108d1ead8a`** (reject, `w3c-f-jcs-number-value`): a root over the leaf with 1.0 and 1e2 written as their tokens.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `number-by-value` switched off:
+
+```
+( printf '{"annotations":{"hundred":1e2,"one":1.0},"check":"c-integral-tokens","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 7d7fa2151131235f20831e52e863b12d783befd530e11c3b84f6992f56d7b7c5
+```
+
+**`v187e4435786b17f9`** (accept, `w3c-f-jcs-safe-range`): the neighbours outside the range carried as strings, which no reader parses as numbers.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"minus-two-to-the-53":"-9007199254740992","negative-zero":"-0","two-to-the-53":"9007199254740992","two-to-the-53-plus-one":"9007199254740993"},"check":"c-safe-range-as-strings","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 28ef9c84eb4d6865d3fd571e695ddd5b2f4d688a6f864e02d41a73ca58c3b35f
+```
+
+**`v5f92e1d7ef255730`** (accept, `w3c-f-jcs-safe-range`): both boundaries of the range, 2^53-1 and -(2^53-1), and the neighbours inside them.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"above-min":-9007199254740990,"below-max":9007199254740990,"max":9007199254740991,"min":-9007199254740991},"check":"c-safe-range-boundaries","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# bfcdf3672f8cd2e7e0bb2494a8a4008b1cd293212ae932b10f69ab14b6015d54
+```
+
+**`v0a887e6b24bdd940`** (reject, `w3c-f-jcs-safe-range`): -(2^53+1), whose nearest double is -2^53.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: -9007199254740993). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":-9007199254740992},"check":"c-minus-two-to-the-53-minus-one","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# d4e4df938d0247432b02f03e7060283d07fd93dd45a49330edd4278df4a22812
+```
+
+**`v16bbc5bfef80043e`** (reject, `w3c-f-jcs-safe-range`): 2^53+1, whose nearest double is 2^53: a reader without the bound writes the root of a different integer, the one written here.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 9007199254740993). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":9007199254740992},"check":"c-two-to-the-53-plus-one","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# b14d98d192a24a4d221d3c599d26c4156881d2602557bb8676ae1b4e70ac4f17
+```
+
+**`v522b0a6b91e74c95`** (reject, `w3c-f-jcs-safe-range`): -2^53, the neighbour just outside the range below.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: -9007199254740992). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":-9007199254740992},"check":"c-minus-two-to-the-53","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 4e95b7e7588e1cb58f3c42e457bd2319a3068a177097d0b1a536688ce8fa3aea
+```
+
+**`va8dfb25c6d62d458`** (reject, `w3c-f-jcs-safe-range`): 2^53, the neighbour just outside the range, with the root a reader without the bound writes over it.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 9007199254740992). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":9007199254740992},"check":"c-two-to-the-53","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ce2e85b6b9ddaebb2915f8390e23d4c2ab8c133c24bb70925c69303406b45a08
+```
+
+**`v900fc651cea938e9`** (accept, `w3c-f-jcs-1e21`): 10^21 carried as a string in both spellings, so no digest has to choose one.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"digits":"1000000000000000000000","exponent":"1e+21"},"check":"c-1e21-as-strings","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 4b40f06cdab32dca09e356bf48097b24b8ab6d52c6c3c5f4f3f58e88bd80f163
+```
+
+**`v40ab7c6deec16438`** (reject, `w3c-f-jcs-1e21`): 10^21 as the exponent token 1e21, refused; a reader without the bound writes 1e+21, as RFC 8785 writes it.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 1e21). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":1e+21},"check":"c-1e21-as-exponent","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 662b1133786ad34ca24fa9a66c7ec2adffcceddbf36a99923d1811fde972d7c7
+```
+
+**`vb37f841c9e91bf18`** (reject, `w3c-f-jcs-1e21`): 10^21 in digits, the spelling the readers wrote before RFC 8785, refused; a reader without the bound writes 1e+21 for it, the root written here.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 1000000000000000000000). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":1e+21},"check":"c-1e21-in-digits","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 948f9c609fb120621bfba31a4589c6d0332c0728a10fc5a2979810ac599f79b6
+```
+
+**`v91f45fe53b9cb4f7`** (accept, `w3c-f-jcs-non-integer`): non-integral numbers carried as strings.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"half":"0.5","nines":"0.99999999999999999","small":"1e-7"},"check":"c-fractions-as-strings","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 86aa0c036510812f8460f10d0ac0363827c3cca313e79d41db9f99b837996395
+```
+
+**`v1afe0d60b2df5d39`** (reject, `w3c-f-jcs-non-integer`): 0.99999999999999999, whose nearest double is 1: refused on its exact value, which a reader that judges the double instead would admit and write as 1.
+
+A conforming reader rejects it: W3C-R-020 (non-integer-number: 0.99999999999999999). The root it declares is the one a reader writes with `integers-only` switched off:
+
+```
+( printf '{"annotations":{"ratio":1},"check":"c-seventeen-nines","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 023a50bdc5ebe43bad9e31769fec689f5419cceedf39c7ae0635a97bab44f474
+```
+
+**`v26a379aeeebabd1e`** (reject, `w3c-f-jcs-non-integer`): 0.5, a non-integral number in a check leaf.
+
+A conforming reader rejects it: W3C-R-020 (non-integer-number: 0.5). The root it declares is the one a reader writes with `integers-only` switched off:
+
+```
+( printf '{"annotations":{"ratio":0.5},"check":"c-one-half","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# c4378bce9ce7194998cde17674ba03f1c923d735f49c238f90badbdbf616ca30
+```
+
+**`v2b4990ad53fbf28b`** (reject, `w3c-f-jcs-non-integer`): 1e-7, which RFC 8785 writes in exponent form.
+
+A conforming reader rejects it: W3C-R-020 (non-integer-number: 1e-7). The root it declares is the one a reader writes with `integers-only` switched off:
+
+```
+( printf '{"annotations":{"ratio":1e-7},"check":"c-1e-7","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 9cbd43e7fd1cf63941f3065e4bc3f13d2ac948c772614ea82e0d69d1285698be
+```
+
+**`vfacf2b3dafdb5c0a`** (accept, `w3c-f-jcs-declaration`): a binding that declares jcs-sha256, the one member of the closed set.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"plain"},"check":"c-declared","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 6e497f370b7c37ef0bc9455cb001052fe02dcc87d65b2a31cd6d4d3e4bc3d0e5
+```
+
+**`v64e02942221729d2`** (reject, `w3c-f-jcs-declaration`): a binding that declares the encoding the readers used before RFC 8785, outside the closed set: refused by name, never read as the reader's own.
+
+A conforming reader rejects it: W3C-R-015 (unsupported-digest-encoding). The root it declares is the one a reader writes with `closed-encoding-set` switched off:
+
+```
+( printf '{"annotations":{"text":"plain"},"check":"c-declared","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 6e497f370b7c37ef0bc9455cb001052fe02dcc87d65b2a31cd6d4d3e4bc3d0e5
+```

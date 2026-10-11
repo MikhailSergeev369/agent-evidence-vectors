@@ -2301,6 +2301,84 @@ def read_back(vid: str, member: dict[str, Any], payload: bytes) -> None:
         raise SystemExit(f"FAIL: {vid} read back does not name the cause {cause}")
 
 
+def printf_bytes(data: bytes) -> str:
+    """Bytes as a printf format argument: printable ASCII as itself, the rest as \\NNN.
+
+    Octal, because POSIX printf defines \\NNN and not \\xNN, and dash, the /bin/sh
+    of several distributions, writes \\x7f as four characters. The percent sign, the
+    single quote and the backslash are written in octal too, since each means
+    something to printf or to the shell.
+    """
+    out = []
+    for b in data:
+        if 0x20 <= b <= 0x7E and b not in (0x25, 0x27, 0x5C):
+            out.append(chr(b))
+        else:
+            out.append(f"\\{b:03o}")
+    return "".join(out)
+
+
+def worked_example(member: dict[str, Any]) -> str:
+    """One member's check-set digest, recomputable with printf and openssl alone.
+
+    The two leaves are the jcs-sha256 bytes of the two checks; the flat root is
+    SHA-256 over their two SHA-256 digests in order. A reject member's root is
+    the one a reader writes with its family's rule weakened, so its leaf bytes
+    are shown as that reader writes them, beside the refusal or the mismatch a
+    conforming reader reports.
+    """
+    vid = w3creport.identify(member)
+    rule = FAMILY_RULES[member["family"]]
+    report_ = member["subject"]
+    checks = report_["checks"]
+    binding = report_["check-set"]
+    weaken = frozenset([rule]) if member["kind"] == "reject" else frozenset()
+    lines = [f"**`{vid}`** ({member['kind']}, `{member['family']}`): {member['cites']}.", ""]
+    if member["kind"] == "reject":
+        cause = member["expected"]["cause"]
+        finding = w3creport.check_set_refusal(report_)
+        lines.append(f"A conforming reader rejects it: {finding}. The root it declares is "
+                     f"the one a reader writes with `{rule}` switched off:")
+    else:
+        lines.append("The root it declares, which a conforming reader recomputes:")
+    try:
+        leaves = [w3creport.jcs_sha256(c, weaken) for c in checks]
+    except w3creport.DigestRefused:
+        leaves = []
+    if leaves:
+        steps = " ".join(
+            f"printf '{printf_bytes(leaf)}' | openssl dgst -sha256 -binary;" for leaf in leaves
+        )
+        lines += ["", "```", f"( {steps} ) | sha256sum", f"# {binding['sha256']}", "```"]
+    else:
+        lines.append("")
+        lines.append(f"(no leaf bytes: `{cause}`)")
+    return "\n".join(lines)
+
+
+def render_examples(members: list[dict[str, Any]]) -> str:
+    chosen = [x for x in members if x["family"] in FAMILY_RULES]
+    blocks = "\n\n".join(worked_example(x) for x in sorted(
+        chosen, key=lambda x: (list(FAMILY_RULES).index(x["family"]), x["kind"] != "accept",
+                               w3creport.identify(x))))
+    return f"""
+## Worked digests for the digest-encoding members
+
+Each block recomputes one member's check-set root from nothing but `printf`,
+`openssl` and `sha256sum`. A member carries two checks, and each check is one
+leaf: the bytes `jcs-sha256` writes for it, RFC 8785 under the integer profile.
+The root is the flat construction, SHA-256 over the SHA-256 of each leaf in
+order, and the comment under each command is the `check-set.sha256` the member
+declares. In the leaf bytes, printable ASCII is itself and any other byte is
+written as a POSIX octal escape, so U+007F is `\\177`, U+00E9 is `\\303\\251` and
+U+1F600 is `\\360\\237\\230\\200`: RFC 8785 writes them as UTF-8, never as `\\u`
+escapes. The commands run in any POSIX shell; where `sha256sum` is missing, use
+`shasum -a 256`.
+
+{blocks}
+"""
+
+
 def member_document(vid: str, member: dict[str, Any]) -> dict[str, Any]:
     document = {
         "id": vid, "suite": SUITE, "specVersion": SPEC_VERSION, "family": member["family"],
@@ -2524,7 +2602,7 @@ def build_manifest() -> tuple[dict[str, Any], dict[str, bytes]]:
         "vectors": entries,
     }
     files["MANIFEST.json"] = json.dumps(manifest, indent=2).encode("utf-8") + b"\n"
-    files["INDEX.md"] = render_index(manifest).encode("utf-8")
+    files["INDEX.md"] = (render_index(manifest) + render_examples(members)).encode("utf-8")
     files["MUTATION-SWEEP.md"] = (
         render_sweep(sweep, len(members)) + render_encoding_sweep(rules, members)
     ).encode("utf-8")
