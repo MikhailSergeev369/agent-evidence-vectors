@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"sort"
 	"strings"
 	"unicode/utf16"
@@ -79,7 +80,18 @@ func encodePythonOpts(buf *bytes.Buffer, value any, opts pyEncodeOpts) error {
 			return fmt.Errorf("corpora: %s is a JSON float, and this encoder refuses one "+
 				"rather than guess whether CPython's repr and Go's strconv agree on it", s)
 		}
-		buf.WriteString(s)
+		// CPython reads an integer token into an int and writes that int back,
+		// so the bytes are the integer's value in decimal, not the token as
+		// written. The two differ on one valid JSON integer token, -0, which
+		// CPython reads as 0 and writes as 0; every other integer has exactly
+		// one spelling in the JSON grammar (no leading zero, no plus sign).
+		// Copying the token wrote -0 where the Python readers write 0, so two
+		// digests over one value differed by which reader computed them.
+		n, ok := new(big.Int).SetString(s, 10)
+		if !ok {
+			return fmt.Errorf("corpora: %s is not a JSON integer", s)
+		}
+		buf.WriteString(n.String())
 	case float64:
 		return fmt.Errorf("corpora: a float reached the CPython-compatible encoder; "+
 			"decode with json.Number so integers stay integers (got %v)", v)
