@@ -164,7 +164,10 @@ pub fn run(dir: &Path) -> (String, i32) {
     out.lines.push(format!("  reject: {n_reject}"));
 
     let mut seen = BTreeSet::new();
-    let mut digest_input: Vec<u8> = Vec::new();
+    // The corpus digest is over the member files in identifier order, which is
+    // not necessarily the order the manifest lists them in. A stable sort, as
+    // the other two readers use, so duplicate identifiers keep manifest order.
+    let mut member_files: Vec<(String, Vec<u8>)> = Vec::new();
     for e in &entries {
         let id = s(e.get("id")).unwrap_or("").to_string();
         let mut fails = Vec::new();
@@ -175,8 +178,8 @@ pub fn run(dir: &Path) -> (String, i32) {
         match fs::read(dir.join(file)) {
             Err(_) => fails.push("the manifest names a vector file that does not exist".into()),
             Ok(bytes) => {
-                digest_input.extend_from_slice(&bytes);
                 member(e, &bytes, spec_version, &req_ids, &mut fails);
+                member_files.push((id.clone(), bytes));
             }
         }
         if !fails.is_empty() {
@@ -186,6 +189,11 @@ pub fn run(dir: &Path) -> (String, i32) {
         }
     }
 
+    member_files.sort_by(|a, b| a.0.cmp(&b.0));
+    let digest_input: Vec<u8> = member_files
+        .into_iter()
+        .flat_map(|(_, bytes)| bytes)
+        .collect();
     corpus_checks(
         dir,
         &manifest,
