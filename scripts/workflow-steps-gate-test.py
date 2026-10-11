@@ -533,6 +533,20 @@ def job_owned_outputs_require_runner_context() -> None:
             assert "RUNNER_TEMP is required" in proc.stderr, proc.stderr
 
 
+def action_vectors_input_replaces_the_corpus() -> None:
+    """The mirror replays the directory the vectors input names, as the action does."""
+    named = GATE.own_action(  # type: ignore[attr-defined]
+        {"verifier": "v", "corpus": "vectors", "vectors": "dir with space"}
+    )
+    assert named.run is not None
+    assert "--vectors 'dir with space'" in named.run, named.run
+    assert "--corpus" not in named.run, named.run
+    assert "CORPUS='dir with space'" in named.run, named.run
+    plain = GATE.own_action({"verifier": "v"})  # type: ignore[attr-defined]
+    assert plain.run is not None
+    assert "--corpus vectors" in plain.run and "--vectors" not in plain.run, plain.run
+
+
 def action_report_path_reaches_the_summary_and_outputs() -> None:
     """The real summary reads the report produced under the job's quoted path."""
     local = GATE.own_action(  # type: ignore[attr-defined]
@@ -1825,6 +1839,7 @@ def main() -> int:
     check("runner variables carry within a job", github_env_and_runner_temp_carry_within_a_job)
     check("corpus binaries belong to their job", corpus_harness_outputs_are_owned_by_the_job)
     check("job outputs require runner context", job_owned_outputs_require_runner_context)
+    check("the vectors input replaces the corpus", action_vectors_input_replaces_the_corpus)
     check(
         "the action report reaches its consumers",
         action_report_path_reaches_the_summary_and_outputs,

@@ -356,6 +356,8 @@ def own_action(inputs: dict[str, Any]) -> Local:
     if not verifier:
         return Local(None, "the action was used without a verifier input")
     corpus = str(inputs.get("corpus", "") or "vectors")
+    vectors = str(inputs.get("vectors", "") or "")
+    source = f"--vectors {shlex.quote(vectors)}" if vectors else f"--corpus {shlex.quote(corpus)}"
     report = str(inputs.get("report-path", "") or "agent-evidence-vectors-report.json")
     report_name = pathlib.Path(report).name
     # The replay's status is captured rather than allowed to abort the block:
@@ -368,11 +370,11 @@ def own_action(inputs: dict[str, Any]) -> Local:
         'export PYTHONPATH="$PWD/packaging${PYTHONPATH:+:$PYTHONPATH}"\n'
         "status=0\n"
         "python3 packaging/run_vectors.py"
-        f" --corpus {shlex.quote(corpus)}"
+        f" {source}"
         f" --verifier {shlex.quote(verifier)}"
         ' --report "$report_path" || status=$?\n'
         'echo "report=$report_path" >> "$GITHUB_OUTPUT"\n'
-        f'REPORT="$report_path" STATUS="$status" CORPUS={shlex.quote(corpus)} \\\n'
+        f'REPORT="$report_path" STATUS="$status" CORPUS={shlex.quote(vectors or corpus)} \\\n'
         "  python3 scripts/action-summary.py\n"
         # The action's last step fails the job on the exit status OR on a
         # summary verdict other than pass, so the mirror does both.
