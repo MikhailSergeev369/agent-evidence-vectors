@@ -1527,6 +1527,20 @@ FROZEN: tuple[Frozen, ...] = (
         "re-run, and restating its figure against later bytes would attribute "
         "work to a pass that never saw them.",
     ),
+    # ---- the nightly sweep's wall time, in the workflow that runs it.
+    # The comment records one timing taken on one workstation and says it has
+    # not been re-measured. Its lower bound came to equal the reject count of
+    # vectors-w3c-report by arithmetic coincidence when that corpus grew; a
+    # wall-clock figure is not a corpus size and must not track one.
+    Frozen(
+        ".github/workflows/forcing-nightly.yml",
+        "the nightly sweep's wall time, as measured on one workstation",
+        "137-264 seconds",
+        "A timing of one sweep on one machine, recorded with the caveat that it "
+        "has not been re-measured. It counts nothing this repository publishes, "
+        "so it can neither be derived here nor be allowed to move when a corpus "
+        "changes.",
+    ),
     # ---- the disensor comparison in the W3C appendix.
     # The appendix reports what `origin/derive_pairs.py` answered on 18
     # September against a THIRD PARTY's corpus, NicolasRocchia/disensor. It is

@@ -2020,7 +2020,7 @@ def encoding_sweep(members: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def render_encoding_sweep(table: list[dict[str, Any]], members: list[dict[str, Any]]) -> str:
     rows = "\n".join(
-        "| `{rule}` | {fams} | {rejectsFlipped} of {rejects} | {acceptsFlipped} ({afams}) | "
+        "| `{rule}` | {fams} | {rejects} | {rejectsFlipped} | {acceptsFlipped} ({afams}) | "
         "{strayRejects} | {strayOther} | {verdict} |".format(
             fams=", ".join(f"`{f}`" for f in entry["families"]),
             afams=", ".join(f"`{f}`" for f in entry["acceptFamilies"]) or "none",
@@ -2047,8 +2047,8 @@ rule's absence writes; no reject member of another family may flip, and no
 member outside these families may flip at all. An accept member flips under
 every rule its value touches, which is why the accept column names families.
 
-| rule | families resting on it | reject members flipped | accept members flipped | other rejects flipped | other members flipped | verdict |
-|---|---|---|---|---|---|---|
+| rule | families resting on it | reject members | reject members flipped | accept members flipped | other rejects flipped | other members flipped | verdict |
+|---|---|---|---|---|---|---|---|
 {rows}
 
 Each reject member, the rule it rests on, the row it is rejected under and the

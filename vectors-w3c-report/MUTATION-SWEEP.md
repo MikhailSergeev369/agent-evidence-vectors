@@ -92,15 +92,15 @@ rule's absence writes; no reject member of another family may flip, and no
 member outside these families may flip at all. An accept member flips under
 every rule its value touches, which is why the accept column names families.
 
-| rule | families resting on it | reject members flipped | accept members flipped | other rejects flipped | other members flipped | verdict |
-|---|---|---|---|---|---|---|
-| `utf16-member-order` | `w3c-f-jcs-member-order` | 1 of 1 | 1 (`w3c-f-jcs-member-order`) | 0 | 0 | isolated |
-| `raw-u007f` | `w3c-f-jcs-u007f` | 1 of 1 | 1 (`w3c-f-jcs-u007f`) | 0 | 0 | isolated |
-| `raw-non-ascii` | `w3c-f-jcs-non-ascii` | 4 of 4 | 5 (`w3c-f-jcs-member-order`, `w3c-f-jcs-non-ascii`) | 0 | 0 | isolated |
-| `number-by-value` | `w3c-f-jcs-number-value` | 2 of 2 | 2 (`w3c-f-jcs-number-value`) | 0 | 0 | isolated |
-| `integers-only` | `w3c-f-jcs-non-integer` | 3 of 3 | 0 (none) | 0 | 0 | isolated |
-| `safe-range` | `w3c-f-jcs-1e21`, `w3c-f-jcs-safe-range` | 6 of 6 | 0 (none) | 0 | 0 | isolated |
-| `closed-encoding-set` | `w3c-f-jcs-declaration` | 1 of 1 | 0 (none) | 0 | 0 | isolated |
+| rule | families resting on it | reject members | reject members flipped | accept members flipped | other rejects flipped | other members flipped | verdict |
+|---|---|---|---|---|---|---|---|
+| `utf16-member-order` | `w3c-f-jcs-member-order` | 1 | 1 | 1 (`w3c-f-jcs-member-order`) | 0 | 0 | isolated |
+| `raw-u007f` | `w3c-f-jcs-u007f` | 1 | 1 | 1 (`w3c-f-jcs-u007f`) | 0 | 0 | isolated |
+| `raw-non-ascii` | `w3c-f-jcs-non-ascii` | 4 | 4 | 5 (`w3c-f-jcs-member-order`, `w3c-f-jcs-non-ascii`) | 0 | 0 | isolated |
+| `number-by-value` | `w3c-f-jcs-number-value` | 2 | 2 | 2 (`w3c-f-jcs-number-value`) | 0 | 0 | isolated |
+| `integers-only` | `w3c-f-jcs-non-integer` | 3 | 3 | 0 (none) | 0 | 0 | isolated |
+| `safe-range` | `w3c-f-jcs-1e21`, `w3c-f-jcs-safe-range` | 6 | 6 | 0 (none) | 0 | 0 | isolated |
+| `closed-encoding-set` | `w3c-f-jcs-declaration` | 1 | 1 | 0 (none) | 0 | 0 | isolated |
 
 Each reject member, the rule it rests on, the row it is rejected under and the
 cause that rejection names:
