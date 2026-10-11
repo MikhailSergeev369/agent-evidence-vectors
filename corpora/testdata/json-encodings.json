@@ -1,9 +1,11 @@
 {
-  "about": "Each case is a JSON document as a producer writes it and, for each digest encoding, the bytes that encoding writes for it (hex) or the reason it refuses. Written by scripts/json-encoding-differential-test.py --write from the Python implementations, held to them by the same script, and held to the Go encoders by corpora/pyjson_table_test.go. Never edit by hand.",
+  "about": "Each case is a JSON document as a producer writes it and, for each digest encoding, the bytes that encoding writes for it (hex) or the reason it refuses. Written by scripts/json-encoding-differential-test.py --write from the Python implementations, held to them by the same script, held to the Go encoders by corpora/pyjson_table_test.go and corpora/w3cjcs_test.go, and held to the Rust W3C reader by a unit test in readers/w3c-report-rs/src/json.rs. Never edit by hand.",
   "columns": [
     "cpython-ascii",
     "cpython-raw",
-    "cpython-utf16"
+    "cpython-utf16",
+    "jcs-sha256",
+    "rfc8785"
   ],
   "cases": [
     {
@@ -16,6 +18,12 @@
         "hex": "7b2276223a307d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a307d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a307d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a307d"
       }
     },
@@ -30,6 +38,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a307d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a307d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a307d"
       }
     },
     {
@@ -42,6 +56,12 @@
         "hex": "7b2276223a2d317d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a2d317d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a2d317d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a2d317d"
       }
     },
@@ -56,6 +76,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a393030373139393235343734303939307d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a393030373139393235343734303939307d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a393030373139393235343734303939307d"
       }
     },
     {
@@ -68,6 +94,12 @@
         "hex": "7b2276223a393030373139393235343734303939317d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a393030373139393235343734303939317d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a393030373139393235343734303939317d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a393030373139393235343734303939317d"
       }
     },
@@ -82,6 +114,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a393030373139393235343734303939327d"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a393030373139393235343734303939327d"
       }
     },
     {
@@ -95,6 +133,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a393030373139393235343734303939337d"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a393030373139393235343734303939327d"
       }
     },
     {
@@ -107,6 +151,12 @@
         "hex": "7b2276223a2d393030373139393235343734303939307d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a2d393030373139393235343734303939307d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a2d393030373139393235343734303939307d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a2d393030373139393235343734303939307d"
       }
     },
@@ -121,6 +171,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a2d393030373139393235343734303939317d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a2d393030373139393235343734303939317d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a2d393030373139393235343734303939317d"
       }
     },
     {
@@ -133,6 +189,12 @@
         "hex": "7b2276223a2d393030373139393235343734303939327d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a2d393030373139393235343734303939327d"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
         "hex": "7b2276223a2d393030373139393235343734303939327d"
       }
     },
@@ -147,6 +209,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a2d393030373139393235343734303939337d"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a2d393030373139393235343734303939327d"
       }
     },
     {
@@ -160,6 +228,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a313030303030303030303030303030303030303030307d"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a31652b32317d"
       }
     },
     {
@@ -173,6 +247,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a313030303030303030303030303030303030303030317d"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a31652b32317d"
       }
     },
     {
@@ -186,6 +266,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a31652b32317d"
       }
     },
     {
@@ -199,6 +285,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a31652b32317d"
       }
     },
     {
@@ -212,6 +304,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a317d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a317d"
       }
     },
     {
@@ -225,6 +323,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "refused": "non-integer-number"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a302e357d"
       }
     },
     {
@@ -238,6 +342,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a307d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a307d"
       }
     },
     {
@@ -251,6 +361,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a31303030303030303030303030303030307d"
       }
     },
     {
@@ -264,6 +380,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a3130307d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a3130307d"
       }
     },
     {
@@ -277,6 +399,12 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "refused": "non-integer-number"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a31652d377d"
       }
     },
     {
@@ -290,6 +418,31 @@
       },
       "cpython-utf16": {
         "refused": "float"
+      },
+      "jcs-sha256": {
+        "refused": "non-integer-number"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a317d"
+      }
+    },
+    {
+      "name": "1e400, past the largest double",
+      "doc": "{\"v\": 1e400}",
+      "cpython-ascii": {
+        "refused": "float"
+      },
+      "cpython-raw": {
+        "refused": "float"
+      },
+      "cpython-utf16": {
+        "refused": "float"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "refused": "number-not-finite"
       }
     },
     {
@@ -302,6 +455,12 @@
         "hex": "7b2276223a227f227d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a227f227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a227f227d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a227f227d"
       }
     },
@@ -316,6 +475,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a225c7530303166227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a225c7530303166227d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a225c7530303166227d"
       }
     },
     {
@@ -328,6 +493,12 @@
         "hex": "7b2276223a22c3a9227d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a22c3a9227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a22c3a9227d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a22c3a9227d"
       }
     },
@@ -342,6 +513,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a22e282ac227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a22e282ac227d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a22e282ac227d"
       }
     },
     {
@@ -354,6 +531,12 @@
         "hex": "7b2276223a22e280a8227d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a22e280a8227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a22e280a8227d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a22e280a8227d"
       }
     },
@@ -368,6 +551,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a22f09f9880227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a22f09f9880227d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a22f09f9880227d"
       }
     },
     {
@@ -380,6 +569,12 @@
         "hex": "7b22efacb3223a22552b46423333222c22f09f9880223a22552b3146363030227d"
       },
       "cpython-utf16": {
+        "hex": "7b22f09f9880223a22552b3146363030222c22efacb3223a22552b46423333227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b22f09f9880223a22552b3146363030222c22efacb3223a22552b46423333227d"
+      },
+      "rfc8785": {
         "hex": "7b22f09f9880223a22552b3146363030222c22efacb3223a22552b46423333227d"
       }
     },
@@ -394,6 +589,12 @@
       },
       "cpython-utf16": {
         "hex": "7b22f0908080223a322c22ee8080223a317d"
+      },
+      "jcs-sha256": {
+        "hex": "7b22f0908080223a322c22ee8080223a317d"
+      },
+      "rfc8785": {
+        "hex": "7b22f0908080223a322c22ee8080223a317d"
       }
     },
     {
@@ -406,6 +607,12 @@
         "hex": "7b2261223a2239303037313939323534373430393933222c2262223a2231652b3231222c2263223a222d30222c2264223a22302e35227d"
       },
       "cpython-utf16": {
+        "hex": "7b2261223a2239303037313939323534373430393933222c2262223a2231652b3231222c2263223a222d30222c2264223a22302e35227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2261223a2239303037313939323534373430393933222c2262223a2231652b3231222c2263223a222d30222c2264223a22302e35227d"
+      },
+      "rfc8785": {
         "hex": "7b2261223a2239303037313939323534373430393933222c2262223a2231652b3231222c2263223a222d30222c2264223a22302e35227d"
       }
     },
@@ -420,6 +627,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2276223a2271756f7465205c22206261636b736c617368205c5c206e65776c696e65205c6e20746162205c74227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a2271756f7465205c22206261636b736c617368205c5c206e65776c696e65205c6e20746162205c74227d"
+      },
+      "rfc8785": {
+        "hex": "7b2276223a2271756f7465205c22206261636b736c617368205c5c206e65776c696e65205c6e20746162205c74227d"
       }
     },
     {
@@ -432,6 +645,12 @@
         "hex": "7b2276223a223c263e227d"
       },
       "cpython-utf16": {
+        "hex": "7b2276223a223c263e227d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2276223a223c263e227d"
+      },
+      "rfc8785": {
         "hex": "7b2276223a223c263e227d"
       }
     },
@@ -446,6 +665,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2261223a7b2263223a5b6e756c6c2c747275652c66616c73655d2c2264223a7b7d7d2c2262223a5b5d7d"
+      },
+      "jcs-sha256": {
+        "hex": "7b2261223a7b2263223a5b6e756c6c2c747275652c66616c73655d2c2264223a7b7d7d2c2262223a5b5d7d"
+      },
+      "rfc8785": {
+        "hex": "7b2261223a7b2263223a5b6e756c6c2c747275652c66616c73655d2c2264223a7b7d7d2c2262223a5b5d7d"
       }
     },
     {
@@ -459,6 +684,12 @@
       },
       "cpython-utf16": {
         "hex": "7b2261223a302c227a223a313030303030303030303030303030303030303030302c22f09f9880223a227f222c22efacb3223a22e282ac227d"
+      },
+      "jcs-sha256": {
+        "refused": "integer-outside-safe-range"
+      },
+      "rfc8785": {
+        "hex": "7b2261223a302c227a223a31652b32312c22f09f9880223a227f222c22efacb3223a22e282ac227d"
       }
     }
   ],

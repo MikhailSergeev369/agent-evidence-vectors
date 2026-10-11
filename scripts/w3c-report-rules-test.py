@@ -76,13 +76,70 @@ def test_rfc9162_sha256_is_the_rfc_9162_tree() -> None:
     """RFC9162_SHA256 (RFC 9942 section 5.1) hashes by RFC 9162 section 2.1.1."""
     if "RFC9162_SHA256" not in w3creport.TREE_SHAPES:
         raise AssertionError("RFC9162_SHA256 is not in the closed set")
-    leaves = [w3creport.compact(check) for check in CHECKS]
+    # Each check holds ASCII strings only, so its RFC 8785 form is the compact,
+    # sorted-key JSON written here without the reader's encoder.
+    leaves = [json.dumps(c, sort_keys=True, separators=(",", ":")).encode() for c in CHECKS]
     expected = rfc9162_mth(leaves).hex()
     got = w3creport.check_set_root(CHECKS, "RFC9162_SHA256")
     if got != expected:
         raise AssertionError(f"RFC9162_SHA256 root {got} is not the RFC 9162 tree {expected}")
     if got == w3creport.flat_root(leaves):
         raise AssertionError("RFC9162_SHA256 hashed as the flat shape")
+
+
+def _bound(checks: list[dict[str, Any]], declared: Any) -> dict[str, Any]:
+    """A report over ``checks`` whose check-set binding declares an encoding.
+
+    The root is computed here from the RFC 8785 text of each check, not by the
+    reader, so the test does not compare the reader with itself.
+    """
+    leaves = [json.dumps(c, sort_keys=True, separators=(",", ":")).encode() for c in checks]
+    report = _accept_subject("report", family="w3c-f-15")
+    report["checks"] = copy.deepcopy(checks)
+    counts = {"declared": 3, "exercised": 3, "pass": 3, "fail": 0, "inconclusive": 0,
+              "not-exercised": 0, "void": 0, "carried": 0, "referenced": 0}
+    report["roll-up"] = dict(counts, **{"negative-capable": {"kind": "nothing"}})
+    report["evidence"] = []
+    report["check-set"] = {"sha256": rfc9162_mth(leaves).hex(), "leaf-count": len(checks),
+                           "tree-shape": "rfc6962", "digest-encoding": declared}
+    return report
+
+
+def test_a_declared_encoding_comes_from_the_closed_set() -> None:
+    """jcs-sha256 binds; any other declaration is refused under W3C-R-015 by name.
+
+    The closed set is proposed (2026Oct/0038), and the corpus pins its members
+    with reports whose encodings part. What no member can pin is a declaration
+    that is not a string, or a spelling of the one name that differs only in
+    case: each must be refused, never read as the member it resembles.
+    """
+    if w3creport.rejections(_bound(CHECKS, "jcs-sha256")):
+        raise AssertionError("a report declaring jcs-sha256 over its own root was rejected")
+    for declared in ("JCS-SHA256", "jcs_sha256", "rfc8785", "", 7, None, ["jcs-sha256"]):
+        report = _bound(CHECKS, declared)
+        if w3creport.rejections(report) != ["W3C-R-015"]:
+            raise AssertionError(f"the declaration {declared!r} was not refused under W3C-R-015")
+        if w3creport.check_set_cause(report) != w3creport.UNSUPPORTED_ENCODING:
+            raise AssertionError(f"the refusal of {declared!r} does not name its cause")
+
+
+def test_a_refused_number_names_its_cause_and_token() -> None:
+    """A number outside the profile is refused under W3C-R-020 naming cause and token."""
+    cases = (
+        ("0.5", "non-integer-number"),
+        ("9007199254740992", "integer-outside-safe-range"),
+        ("1e21", "integer-outside-safe-range"),
+        ("1.0e16", "integer-outside-safe-range"),
+    )
+    for token, cause in cases:
+        text = json.dumps(_bound(CHECKS, "jcs-sha256"))
+        doc = w3creport.load_json(text.replace('"c-pass"', '"c-pass", "n": ' + token, 1))
+        if w3creport.rejections(doc) != ["W3C-R-020"]:
+            raise AssertionError(f"{token} was not refused under W3C-R-020")
+        if w3creport.check_set_cause(doc) != cause:
+            raise AssertionError(f"{token} names {w3creport.check_set_cause(doc)}, not {cause}")
+        if w3creport.check_set_refusal(doc) != f"W3C-R-020 ({cause}: {token})":
+            raise AssertionError(f"{token} is named {w3creport.check_set_refusal(doc)!r}")
 
 
 def _accept_subject(subject_type: str, family: str | None = None) -> dict[str, Any]:
@@ -242,6 +299,8 @@ if __name__ == "__main__":
         test_unregistered_shape_is_refused,
         test_every_registered_shape_has_its_own_root,
         test_rfc9162_sha256_is_the_rfc_9162_tree,
+        test_a_declared_encoding_comes_from_the_closed_set,
+        test_a_refused_number_names_its_cause_and_token,
         test_snapshot_member_types_are_read,
         test_run_member_types_are_read,
         test_ledger_tokens_that_are_not_counts_break_the_sum,

@@ -27,6 +27,12 @@ Columns:
   cpython-raw     the same with ensure_ascii=False (pyEncodeOpts{})
   cpython-utf16   the same with member names ordered by UTF-16 code unit
                   (pyEncodeOpts{UTF16Order: true})
+  jcs-sha256      the W3C report readers' digest over a JSON value: RFC 8785
+                  under the integer profile, a refusal written as its cause
+                  code (the Go reader in corpora/w3cjcs.go and the Rust reader
+                  in readers/w3c-report-rs are held to it)
+  rfc8785         the W3C report readers' member identifier: RFC 8785 as
+                  written, numbers as IEEE 754 doubles
 
 The repository's Python twins of the Go encoder (TWINS) must reproduce their
 column through the parse their reader uses.
@@ -50,7 +56,7 @@ from typing import Any
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "packaging"))
 
-from agent_evidence_vectors import mcpowasp  # noqa: E402
+from agent_evidence_vectors import mcpowasp, w3creport  # noqa: E402
 
 TABLE = REPO / "corpora" / "testdata" / "json-encodings.json"
 
@@ -81,6 +87,7 @@ CASES: tuple[tuple[str, str], ...] = (
     ("1e2 as an exponent", '{"v": 1e2}'),
     ("1e-7", '{"v": 1e-7}'),
     ("seventeen nines after the point", '{"v": 0.99999999999999999}'),
+    ("1e400, past the largest double", '{"v": 1e400}'),
     ("U+007F", '{"v": "\\u007f"}'),
     ("U+001F", '{"v": "\\u001f"}'),
     ("U+00E9", '{"v": "\\u00e9"}'),
@@ -151,11 +158,28 @@ def _cpython(doc: str, ensure_ascii: bool, utf16: bool) -> bytes:
                       ensure_ascii=ensure_ascii).encode("utf-8")
 
 
+def _w3c(encode: Callable[[Any], bytes]) -> Callable[[str], bytes]:
+    """A W3C report reader encoding, through that reader's own parse."""
+
+    def run(doc: str) -> bytes:
+        try:
+            return encode(w3creport.load_json(doc))
+        except w3creport.DigestRefused as exc:
+            # The cause, not the token: each reader names the token in its own
+            # spelling (serde_json writes 1e21 back as 1e+21), and the cause is
+            # what the list asked a reader to name.
+            raise Refused(exc.cause) from exc
+
+    return run
+
+
 #: Every column, and the Python implementation that owns it.
 ENCODINGS: dict[str, Callable[[str], bytes]] = {
     "cpython-ascii": lambda doc: _cpython(doc, ensure_ascii=True, utf16=False),
     "cpython-raw": lambda doc: _cpython(doc, ensure_ascii=False, utf16=False),
     "cpython-utf16": lambda doc: _cpython(doc, ensure_ascii=False, utf16=True),
+    "jcs-sha256": _w3c(w3creport.jcs_sha256),
+    "rfc8785": _w3c(w3creport.rfc8785),
 }
 
 
@@ -173,8 +197,9 @@ def build() -> dict[str, Any]:
             "Each case is a JSON document as a producer writes it and, for each digest "
             "encoding, the bytes that encoding writes for it (hex) or the reason it refuses. "
             "Written by scripts/json-encoding-differential-test.py --write from the Python "
-            "implementations, held to them by the same script, and held to the Go encoders "
-            "by corpora/pyjson_table_test.go. Never edit by hand."
+            "implementations, held to them by the same script, held to the Go encoders by "
+            "corpora/pyjson_table_test.go and corpora/w3cjcs_test.go, and held to the Rust "
+            "W3C reader by a unit test in readers/w3c-report-rs/src/json.rs. Never edit by hand."
         ),
         "columns": list(ENCODINGS),
         "cases": [

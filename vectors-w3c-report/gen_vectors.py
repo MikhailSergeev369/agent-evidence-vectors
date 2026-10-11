@@ -1046,7 +1046,7 @@ def build_rules(m: Members) -> None:
     three = [PASS, PASS_2, check("c-pass-3", "pass")]
     padded = report(three, shape="rfc6962")
     padded["check-set"]["sha256"] = w3creport.rfc6962_root(
-        [w3creport.compact(c) for c in [*three, three[-1]]]
+        [w3creport.jcs_sha256(c) for c in [*three, three[-1]]]
     )
     m.pair(
         "w3c-f-20", "W3C-R-020", padded, report(three, shape="rfc6962"),
