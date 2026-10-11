@@ -30,6 +30,9 @@ binding, `W3C-R-029`) are in the v0.1 text and are agreed here. What remains:
 - A run that declares no checker and constraint-set binding is not refused
   under `W3C-R-029`, because v0.1 fixes no slot for it (section 5.5, open item
   O7).
+- v0.1 does not say which bytes a digest over a JSON value is taken over. The
+  digest encoding below, `W3C-R-030` to `W3C-R-032`, was proposed on the list
+  after the text froze and is marked proposed.
 
 ## The text is vendored and every identifier is a sentence
 
@@ -52,15 +55,141 @@ recomputes), resolves with a mismatch (an integrity failure), does not resolve
 (unchecked, and the rows reading `moved` degrade rather than fire). The store
 is part of the member's identity, so a changed store is a changed member.
 
-## Two readers, held identical
+## Three readers, held identical
 
 `aee-verify vectors-w3c-report/` judges the corpus through
-`corpora/w3creport.go`, and `python3 packaging/run_vectors.py --corpus
+`corpora/w3creport.go`, `python3 packaging/run_vectors.py --corpus
 vectors-w3c-report` judges it through
-`packaging/agent_evidence_vectors/w3creport.py`; the run-metrics and
-context-discovery members have their own modules on both rails.
-`scripts/w3c-rails-parity-test.py` diffs every line the two print over the
+`packaging/agent_evidence_vectors/w3creport.py`, and `readers/w3c-report-rs`
+is a Rust reader written from the v0.1 text and the corpus alone
+(`docs/research/w3c-reader-independence.md`). The run-metrics and
+context-discovery members have their own modules on each rail.
+`scripts/w3c-rails-parity-test.py` diffs every line the three print over the
 committed corpus and over mutated copies.
+
+## Digests over a JSON value: jcs-sha256
+
+A report digests JSON values: each check of the check set is one leaf of the
+`check-set` root. Every reader takes such a digest over the RFC 8785 form of
+the value under a numeric profile, the encoding the list named `jcs-sha256`
+(`2026Oct-0038`, with the profile from `2026Oct-0040`):
+
+- **Strings.** Only the quotation mark, the backslash and U+0000 to U+001F are
+  escaped, with the short forms `\b \t \n \f \r` where JSON has them and
+  `\u00xx` in lower case otherwise. Every other character, U+007F and
+  everything above it included, is written as itself in UTF-8.
+- **Member names** are sorted by their UTF-16 code units, so a name starting
+  with U+1F600 (lead surrogate 0xD83D) sorts before one starting with U+FB33.
+- **Numbers.** A number is admitted when its exact decimal value is an integer
+  of magnitude below 2^53, that is from -(2^53-1) to 2^53-1, and it is written
+  as that integer whatever its spelling: `1.0` as `1`, `1e2` as `100`, `-0` and
+  `-0.0` as `0`. A number whose exact value is not an integer (`0.5`, `1e-7`,
+  and `0.99999999999999999`, whose nearest double is 1) has no `jcs-sha256`
+  form, and nor has an integer of magnitude 2^53 or more (`9007199254740992`,
+  and 10^21 in either spelling). The value is decided on the token, never on a
+  double made from it. A value that needs such a number carries it as a string.
+- **The refusal.** A report whose digested value holds a number outside the
+  profile is rejected under `W3C-R-020` with the cause `non-integer-number` or
+  `integer-outside-safe-range`, and a root that does not recompute is rejected
+  under `W3C-R-020` with the cause `digests-differ`. The Python module's
+  `check_set_refusal` writes the finding with the number as it was written,
+  `W3C-R-020 (integer-outside-safe-range: 1e21)`.
+- **The declaration.** A set binding may state `"digest-encoding":
+  "jcs-sha256"`, the one member of a closed set. A binding that states none is
+  digested under `jcs-sha256`. A binding that states anything else is rejected
+  under `W3C-R-015` with the cause `unsupported-digest-encoding`, never read as
+  if it had named the reader's own encoding.
+
+A reject member of these families states its cause in `expected.cause`, and
+every reader checks that its rejection names that cause: a number outside the
+profile and a root that does not recompute both land under `W3C-R-020`, and
+only the cause tells them apart.
+
+A member identifier is `v` and the first 16 hex digits of SHA-256 over the RFC
+8785 form of the member's `kind`, `family`, `requirements`, `subjectType`,
+`subject`, `resolves` and `expected`, a missing field read as null. It takes
+numbers as RFC 8785 writes them, as IEEE 754 doubles, and not under the
+profile, because a member rejected for carrying a number outside the profile
+still needs a name.
+
+The readers used to write compact, sorted-key, ASCII-escaped JSON. Every
+identifier and every root committed before these members was recomputed both
+ways and coincides, because none of them carried a non-ASCII character,
+U+007F, a fraction, `-0` or an integer outside the profile. No earlier member
+changed.
+
+## The digest-encoding members
+
+Eight families carry the encoding: 13 accept members and 18 reject members.
+
+| family | case | accept | reject |
+|---|---|---|---|
+| `w3c-f-jcs-u007f` | U+007F written as itself | 1 | 1 |
+| `w3c-f-jcs-non-ascii` | U+00E9, U+20AC, U+2028 and U+1F600 as UTF-8 | 4 | 4 |
+| `w3c-f-jcs-member-order` | a supplementary-plane name before a BMP name above U+D800 | 1 | 1 |
+| `w3c-f-jcs-number-value` | `-0`, `-0.0`, `1.0` and `1e2` written by value | 2 | 2 |
+| `w3c-f-jcs-safe-range` | both boundaries, the neighbours on either side, and numeric strings | 2 | 4 |
+| `w3c-f-jcs-1e21` | 10^21 as `1e21` and as digits, and as strings | 1 | 2 |
+| `w3c-f-jcs-non-integer` | `0.5`, `1e-7`, `0.99999999999999999`, and numeric strings | 1 | 3 |
+| `w3c-f-jcs-declaration` | a declared encoding in and out of the closed set | 1 | 1 |
+
+Each reject member is rejected for its stated cause by all three readers, and
+flips when the one rule it rests on is weakened: the encoding section of
+`MUTATION-SWEEP.md` weakens each rule of the encoding in turn and records that
+only its own members flip. The members rest on proposed requirements, so they
+are counted as excluded-under-proposed-rule, beside the `W3C-R-022` members,
+and the section 10 selection stays 165 members, 83 to reject and 82 to accept.
+
+## Recompute a member's digest by hand
+
+A leaf is the `jcs-sha256` bytes of one check. A `flat` root is SHA-256 over
+the concatenated SHA-256 of each leaf, in order; `rfc6962` and
+`RFC9162_SHA256` are the Merkle Tree Hash of RFC 6962 section 2.1. Member
+`v822c4bed9ba714d3` carries two checks, one annotated with U+007F, and its
+root recomputes from the corpus directory with `printf`, `openssl` and
+`sha256sum` alone (`\177` is U+007F, written as the byte RFC 8785 writes):
+
+```sh
+( printf '{"annotations":{"text":"delete \177"},"check":"c-u007f","state":"pass"}' | openssl dgst -sha256 -binary
+  printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary ) | sha256sum
+# fe92923b2a1cdb0f712e0376f2e69c30511cedec57333cea3f5e06c15c9e5df2
+```
+
+The output is the `check-set.sha256` the member declares. `INDEX.md` prints
+the same command for every member of the eight families, one per member; for a
+reject member it prints the root a reader writes with the member's rule
+weakened, which is the root the member declares and a conforming reader
+refuses.
+
+## Check the corpus digest from outside this repository
+
+`corpusDigest` is SHA-256 over the bytes of the member files, concatenated in
+identifier order. From the corpus directory:
+
+```sh
+python3 -c 'import hashlib, json
+manifest = json.load(open("MANIFEST.json"))
+digest = hashlib.sha256()
+for entry in sorted(manifest["vectors"], key=lambda e: e["id"]):
+    digest.update(open(entry["file"], "rb").read())
+print(digest.hexdigest())'
+# prints the corpusDigest in MANIFEST.json
+```
+
+Each member file is named after its identifier, so while `vectors/` holds
+exactly the listed members, as it does in a release, this gives the same
+digest:
+
+```sh
+cat $(ls vectors/*.json | LC_ALL=C sort) | sha256sum
+# prints the corpusDigest in MANIFEST.json
+```
+
+The digest must equal `corpusDigest` in `MANIFEST.json` and the first field of
+the `vectors-w3c-report/MANIFEST.json` line of `release/CORPUS-DIGESTS.txt`.
+That file is signed: check the signature and its timestamps as
+[docs/reference/release-verification.md](../docs/reference/release-verification.md)
+says, with `cosign verify-blob` and `release/cosign.pub`.
 
 ## The mutation sweep
 

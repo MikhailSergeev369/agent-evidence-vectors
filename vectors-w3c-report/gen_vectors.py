@@ -2213,9 +2213,11 @@ pairs from that repository and `origin/disensor-1e36257-pairs.json` is what it
 wrote.
 
 Regenerate byte-identically: `python3 gen_vectors.py`.
-Self-check: `aee-verify vectors-w3c-report/` from the repository root, or
-`python3 packaging/run_vectors.py --corpus vectors-w3c-report`; the two print
-the same lines.
+Self-check from the repository root: `aee-verify vectors-w3c-report/`,
+`python3 packaging/run_vectors.py --corpus vectors-w3c-report`, or the Rust
+reader, `cargo run --release --locked --manifest-path
+readers/w3c-report-rs/Cargo.toml -- vectors-w3c-report`; the three print the
+same lines.
 
 ## Vendored text
 

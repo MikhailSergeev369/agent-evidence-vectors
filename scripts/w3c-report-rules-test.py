@@ -320,12 +320,62 @@ def test_the_worked_digests_reproduce_in_a_posix_shell() -> None:
             raise AssertionError(
                 f"{vid}: INDEX.md prints {printed}, the member declares {declared}"
             )
-        proc = subprocess.run(["sh", "-c", command], capture_output=True, text=True, check=False)
-        got = proc.stdout.split()[0] if proc.stdout.split() else ""
-        if proc.returncode != 0 or got != declared:
+        status, got, err = _first_field(command)
+        if status != 0 or got != declared:
             raise AssertionError(
-                f"{vid}: the command gives {got or 'nothing'} (exit {proc.returncode}, "
-                f"{proc.stderr.strip()[:200]}), the member declares {declared}"
+                f"{vid}: the command gives {got or 'nothing'} (exit {status}, {err}), "
+                f"the member declares {declared}"
+            )
+
+
+README_PRINTS_CORPUS_DIGEST = "# prints the corpusDigest in MANIFEST.json"
+
+
+def _first_field(command: str) -> tuple[int, str, str]:
+    """Run a printed command under sh in the corpus directory: exit, first field, stderr."""
+    proc = subprocess.run(["sh", "-c", command], cwd=CORPUS, capture_output=True, text=True,
+                          check=False)
+    fields = proc.stdout.split()
+    return proc.returncode, fields[0] if fields else "", proc.stderr.strip()[:200]
+
+
+def test_the_readme_commands_run_as_printed() -> None:
+    """Every sh block of the corpus README, run as printed from the corpus directory.
+
+    A block ends in a comment saying what it prints: a SHA-256 in hex, which
+    must be a root that a member of a digest-encoding family declares, or the
+    line saying it prints the corpusDigest, which must be the one in
+    MANIFEST.json. A block that says neither fails, so no printed command goes
+    unrun.
+    """
+    for tool in ("sh", "openssl", "sha256sum", "python3"):
+        if shutil.which(tool) is None:
+            raise AssertionError(f"{tool} is not on PATH, so the README commands cannot be run")
+    manifest = json.loads((CORPUS / "MANIFEST.json").read_text(encoding="utf-8"))
+    members = [
+        json.loads((CORPUS / e["file"]).read_text(encoding="utf-8"))
+        for e in manifest["vectors"] if e["family"].startswith("w3c-f-jcs-")
+    ]
+    roots = {m["subject"]["check-set"]["sha256"] for m in members}
+    blocks = re.findall(r"```sh\n(.*?)\n```", (CORPUS / "README.md").read_text(encoding="utf-8"),
+                        re.S)
+    if not blocks:
+        raise AssertionError("README.md prints no sh block")
+    for block in blocks:
+        command, _, said = block.rpartition("\n")
+        if re.fullmatch(r"# [0-9a-f]{64}", said):
+            want = said[2:]
+            if want not in roots:
+                raise AssertionError(f"README.md prints {want}, a root no encoding member declares")
+        elif said == README_PRINTS_CORPUS_DIGEST:
+            want = manifest["corpusDigest"]
+        else:
+            raise AssertionError(f"a README.md sh block ends in {said!r}, not in what it prints")
+        status, got, err = _first_field(command)
+        if status != 0 or got != want:
+            raise AssertionError(
+                f"{command.splitlines()[0][:60]}...: gives {got or 'nothing'} (exit {status}, "
+                f"{err}), want {want}"
             )
 
 
@@ -350,6 +400,7 @@ if __name__ == "__main__":
         test_a_declared_encoding_comes_from_the_closed_set,
         test_a_refused_number_names_its_cause_and_token,
         test_the_worked_digests_reproduce_in_a_posix_shell,
+        test_the_readme_commands_run_as_printed,
         test_snapshot_member_types_are_read,
         test_run_member_types_are_read,
         test_ledger_tokens_that_are_not_counts_break_the_sum,

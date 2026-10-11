@@ -812,8 +812,9 @@ jobs:
       # shape outside the closed set is refused rather than hashed as another
       # shape, and each registered shape is hashed by the construction its name
       # denotes, checked against the RFC text written out independently. It also
-      # runs every worked digest INDEX.md prints, under sh with openssl and
-      # sha256sum, and holds each to the root its member declares.
+      # runs every worked digest INDEX.md prints and every command the corpus
+      # README prints, under sh, and holds each to the root or the corpusDigest
+      # it states.
       - name: the v0.1 report reader's tree-shape rules
         run: python3 scripts/w3c-report-rules-test.py
       # One table of JSON documents and the bytes each digest encoding writes
