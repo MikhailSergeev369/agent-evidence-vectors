@@ -137,3 +137,37 @@ func TestPythonCompactJSONAgreesWithTheSharedTable(t *testing.T) {
 		t.Fatal("no cpython column was checked, so this test held nothing")
 	}
 }
+
+// TestNumberTruthAgreesWithTheSharedTable: a Python reader tests the truth of
+// the value it parsed, so -0, 0.0 and a token too small for a double are false
+// there. The Go readers compared the token's text with "0" and read them as
+// true; jsonNumberIsZero reads the value, and the table's answers are CPython's.
+func TestNumberTruthAgreesWithTheSharedTable(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("testdata", "json-encodings.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var table struct {
+		Truth []struct {
+			Token string `json:"token"`
+			Falsy bool   `json:"cpython-falsy"`
+		} `json:"number-truth"`
+	}
+	if err := json.Unmarshal(raw, &table); err != nil {
+		t.Fatal(err)
+	}
+	if len(table.Truth) == 0 {
+		t.Fatal("the shared table holds no number-truth tokens")
+	}
+	for _, row := range table.Truth {
+		if got := jsonNumberIsZero(json.Number(row.Token)); got != row.Falsy {
+			t.Errorf("%s: CPython reads it as false=%t, jsonNumberIsZero says %t", row.Token, row.Falsy, got)
+		}
+		if got := moTruthy(json.Number(row.Token)); got == row.Falsy {
+			t.Errorf("%s: the mcp-owasp reader's truth test says %t, CPython's bool says %t", row.Token, got, !row.Falsy)
+		}
+		if got := isFalsy(json.Number(row.Token)); got != row.Falsy {
+			t.Errorf("%s: the cross-run record reader's falsiness test says %t, CPython says %t", row.Token, got, row.Falsy)
+		}
+	}
+}

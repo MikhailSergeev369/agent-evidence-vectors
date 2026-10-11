@@ -28,6 +28,10 @@ Columns:
   cpython-utf16   the same with member names ordered by UTF-16 code unit
                   (pyEncodeOpts{UTF16Order: true})
 
+and one section beside them, number-truth: number tokens and whether CPython
+reads each as a false value, which corpora/pyjson.go's jsonNumberIsZero must
+match.
+
 Exit 0 when the table holds; 1 when it differs, naming each cell.
 """
 
@@ -84,6 +88,16 @@ CASES: tuple[tuple[str, str], ...] = (
     ("all five cases of 2026Oct/0031 in one object",
      '{"\\ufb33": "\\u20ac", "z": 1000000000000000000000, '
      '"\\ud83d\\ude00": "\\u007f", "a": -0}'),
+)
+
+
+#: Number tokens, for the truth CPython gives the value it parses each into. A
+#: Python reader tests a parsed value's truth; a Go reader holds the token, and
+#: corpora/pyjson.go's jsonNumberIsZero must answer as CPython does: the Go
+#: readers once compared the token's text with "0" and read -0 and 0.0 as true.
+NUMBER_TOKENS: tuple[str, ...] = (
+    "0", "-0", "0.0", "-0.0", "0e5", "0E-5", "1e-400", "-1e-400", "2e-324",
+    "5e-324", "1", "-1", "0.5", "1e400", "-1e400", "9007199254740993",
 )
 
 
@@ -160,6 +174,9 @@ def build() -> dict[str, Any]:
              **{column: _cell(encode, doc) for column, encode in ENCODINGS.items()}}
             for name, doc in CASES
         ],
+        "number-truth": [
+            {"token": token, "cpython-falsy": not json.loads(token)} for token in NUMBER_TOKENS
+        ],
     }
 
 
@@ -185,6 +202,8 @@ def differences(table: dict[str, Any], committed: dict[str, Any]) -> list[str]:
             if held.get(column) != case[column]:
                 out.append(f"{case['name']!r} {column}: the table holds {held.get(column)}, "
                            f"the Python implementation writes {case[column]}")
+    if committed.get("number-truth") != table["number-truth"]:
+        out.append("the number-truth section is not what CPython answers for its tokens")
     return out
 
 

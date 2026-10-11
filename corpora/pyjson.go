@@ -3,9 +3,11 @@ package corpora
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode/utf16"
 )
@@ -47,6 +49,26 @@ func pythonCompactJSONOpts(value any, opts pyEncodeOpts) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+// jsonNumberIsZero reports whether CPython reads a JSON number token as zero,
+// which is what a Python reader's truth test of the parsed value asks. An
+// integer token is read exactly, so -0 is zero; any other token is read as the
+// double CPython parses it into, so 0.0, -0.0 and a token too small for a
+// double are zero, and a token too large for one is infinity, which is not.
+// Comparing the token's text with "0" read -0 and 0.0 as true where every
+// Python reader reads them as false.
+func jsonNumberIsZero(n json.Number) bool {
+	s := n.String()
+	if !strings.ContainsAny(s, ".eE") {
+		i, ok := new(big.Int).SetString(s, 10)
+		return ok && i.Sign() == 0
+	}
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil && !errors.Is(err, strconv.ErrRange) {
+		return false
+	}
+	return f == 0
 }
 
 // decodeJSONNumbers parses raw JSON with numbers kept as json.Number, so a

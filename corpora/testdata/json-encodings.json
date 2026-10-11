@@ -461,5 +461,71 @@
         "hex": "7b2261223a302c227a223a313030303030303030303030303030303030303030302c22f09f9880223a227f222c22efacb3223a22e282ac227d"
       }
     }
+  ],
+  "number-truth": [
+    {
+      "token": "0",
+      "cpython-falsy": true
+    },
+    {
+      "token": "-0",
+      "cpython-falsy": true
+    },
+    {
+      "token": "0.0",
+      "cpython-falsy": true
+    },
+    {
+      "token": "-0.0",
+      "cpython-falsy": true
+    },
+    {
+      "token": "0e5",
+      "cpython-falsy": true
+    },
+    {
+      "token": "0E-5",
+      "cpython-falsy": true
+    },
+    {
+      "token": "1e-400",
+      "cpython-falsy": true
+    },
+    {
+      "token": "-1e-400",
+      "cpython-falsy": true
+    },
+    {
+      "token": "2e-324",
+      "cpython-falsy": true
+    },
+    {
+      "token": "5e-324",
+      "cpython-falsy": false
+    },
+    {
+      "token": "1",
+      "cpython-falsy": false
+    },
+    {
+      "token": "-1",
+      "cpython-falsy": false
+    },
+    {
+      "token": "0.5",
+      "cpython-falsy": false
+    },
+    {
+      "token": "1e400",
+      "cpython-falsy": false
+    },
+    {
+      "token": "-1e400",
+      "cpython-falsy": false
+    },
+    {
+      "token": "9007199254740993",
+      "cpython-falsy": false
+    }
   ]
 }
