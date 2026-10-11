@@ -41,7 +41,7 @@ Two standalone tools have separate jobs: [vectors-anchor-stream/run_verifier.py]
 | `card-signing-input` (default) | the card without its top-level `signatures` member, canonicalized | every vector |
 | `rfc8785` (`A2A_JCS_TARGET=rfc8785`) | one JSON value to RFC 8785 bytes | groups A3 to A6 |
 
-The harness runs `<verifier> <target> <input.json>` once per vector. The input file holds the vector's JSON text: `input_raw` verbatim for a reject, `input` serialized for an accept. The verifier answers on its last nonempty stdout line:
+The harness runs `<verifier> <target> <input.json>` once per vector. The input file holds the vector's JSON text: `input_raw` verbatim for a reject, `input` serialized for an accept, with every number written as the token the vector file holds, so an integer `-0` reaches the verifier as `-0`. The verifier answers on its last nonempty stdout line:
 
 | Exit | Answer | Meaning |
 | --- | --- | --- |
