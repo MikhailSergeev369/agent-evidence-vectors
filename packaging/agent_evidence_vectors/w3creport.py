@@ -1050,15 +1050,16 @@ def _rows_check_set(
         out.add(finding[0])
 
 
-def check_set_cause(report: dict[str, Any]) -> str | None:
+def check_set_cause(report: dict[str, Any], weaken: frozenset[str] = NO_WEAKENING) -> str | None:
     """The cause a rejection from the report's check-set binding names, if any.
 
     A well-shaped report only. The judge compares it with a member's
     ``expected.cause``, so a member is rejected for the reason it states and
     not merely under the row: a float and a root that does not recompute both
-    land under W3C-R-020, and only the cause tells them apart.
+    land under W3C-R-020, and only the cause tells them apart. ``weaken`` is
+    for the generator's mutation sweep, as in rejections().
     """
-    finding = _check_set_finding(report, report["checks"], NO_WEAKENING)
+    finding = _check_set_finding(report, report["checks"], weaken)
     return None if finding is None else finding[1]
 
 
