@@ -105,7 +105,8 @@ def envelope(payload_type: str, body: bytes, signatures: list[dict[str, str]]) -
 # Stored reports the decision names. Their bytes are what the digests cover.
 REPLAY_TRACES = 41  # fixture data inside a report payload, not a count of this corpus
 REPLAY_REPORT = {
-    "coverage": f"{REPLAY_TRACES}/{REPLAY_TRACES} traces checked", "exhaustive": True, "guard_id": GUARD, "passed": True,
+    "coverage": f"{REPLAY_TRACES}/{REPLAY_TRACES} traces checked", "exhaustive": True,
+    "guard_id": GUARD, "passed": True,
     "snapshot_digest": _hex("recorded trace snapshot"), "targets_hit": 3, "targets_total": 3,
     "false_positives": [], "benign_twin_fires": 0, "verdict": "CLEARED",
 }
