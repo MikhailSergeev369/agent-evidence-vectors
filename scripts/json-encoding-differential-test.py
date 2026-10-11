@@ -28,7 +28,10 @@ Columns:
   cpython-utf16   the same with member names ordered by UTF-16 code unit
                   (pyEncodeOpts{UTF16Order: true})
 
-and one section beside them, number-truth: number tokens and whether CPython
+The repository's Python twins of the Go encoder (TWINS) must reproduce their
+column through the parse their reader uses.
+
+And one section beside the columns, number-truth: number tokens and whether CPython
 reads each as a false value, which corpora/pyjson.go's jsonNumberIsZero must
 match.
 
@@ -39,11 +42,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 REPO = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO / "packaging"))
+
+from agent_evidence_vectors import mcpowasp  # noqa: E402
+
 TABLE = REPO / "corpora" / "testdata" / "json-encodings.json"
 
 #: The documents: the measured boundary cases of the v0.1 digest encoding
@@ -207,6 +215,34 @@ def differences(table: dict[str, Any], committed: dict[str, Any]) -> list[str]:
     return out
 
 
+def _mcpowasp(doc: str) -> bytes:
+    try:
+        return mcpowasp.compact(mcpowasp.load_record(doc))
+    except mcpowasp.FloatRefused as exc:
+        raise Refused("float") from exc
+
+
+#: The repository's Python twins of the Go encoder, each through the parse its
+#: reader uses, and the column each must reproduce. The mcp-owasp reader digested
+#: a float with repr while its Go twin refused it, so the two parted on any
+#: record that carried one.
+TWINS: dict[str, tuple[str, Callable[[str], bytes]]] = {
+    "mcp-owasp reader": ("cpython-ascii", _mcpowasp),
+}
+
+
+def twin_differences(table: dict[str, Any]) -> list[str]:
+    """Every case where a Python twin of the Go encoder parts from its column."""
+    out: list[str] = []
+    for twin, (column, encode) in TWINS.items():
+        for case in table["cases"]:
+            got = _cell(encode, case["doc"])
+            if got != case[column]:
+                out.append(f"{case['name']!r}: the {twin} writes {got}, {column} holds "
+                           f"{case[column]}")
+    return out
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Hold the shared JSON encoding table to the Python encoders."
@@ -225,6 +261,7 @@ def main() -> int:
         print(f"FAIL {TABLE.relative_to(REPO)} is missing; run with --write")
         return 1
     failures = differences(table, json.loads(TABLE.read_text(encoding="ascii")))
+    failures += twin_differences(table)
     if not failures and TABLE.read_text(encoding="ascii") != text:
         failures.append("the table's bytes are not what --write would write")
     for failure in failures:
