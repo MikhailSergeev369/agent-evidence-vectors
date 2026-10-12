@@ -141,6 +141,9 @@ exclude = ["**/__pycache__", "**/.build", "**/*.pyc", "vectors/**/*.py", "vector
 # specification ships at that path beside the corpora.
 "spec/predicates/observed-effect.md" = "agent_evidence_vectors/corpora/spec/predicates/observed-effect.md"
 "spec/schemas/observed-effect-code-digest-v0.5.schema.json" = "agent_evidence_vectors/corpora/spec/schemas/observed-effect-code-digest-v0.5.schema.json"
+# The self-reported-record reader checks its corpus against the vendored
+# contract at <corpus>/../spec/self-reported-record/v1.md.
+"spec/self-reported-record/v1.md" = "agent_evidence_vectors/corpora/spec/self-reported-record/v1.md"
 # The directory readers check each corpus's recorded criteria against these
 # source documents. Keep their repository-relative paths beside the corpora.
 "docs/proposals/ai-generation-v01-findings.md" = "agent_evidence_vectors/corpora/docs/proposals/ai-generation-v01-findings.md"
@@ -162,6 +165,7 @@ only-include = [
     "packaging/run_vectors.py",
     "spec/predicates/observed-effect.md",
     "spec/schemas/observed-effect-code-digest-v0.5.schema.json",
+    "spec/self-reported-record/v1.md",
     "docs/proposals/ai-generation-v01-findings.md",
     "docs/INTEROP-EVIDENCE.md",
     "docs/mcp-response-phase.md",
