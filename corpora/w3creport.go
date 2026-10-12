@@ -231,54 +231,72 @@ func w3cCheckExpectation(v w3cVector, known map[string]bool, out *Member) {
 }
 
 func (w w3cReport) checkFile(dir string, v w3cVector, out *Member) {
-	if !existsIn(dir, v.File) {
-		out.Findings = append(out.Findings, "the manifest names a vector file that does not exist")
+	object, finding := readW3CMember(dir, v)
+	if finding != "" {
+		out.Findings = append(out.Findings, finding)
 		return
+	}
+	out.Findings = append(out.Findings, w3cIdentityFindings(object, v)...)
+	out.Findings = append(out.Findings, w3cVerdictFindings(object, v)...)
+}
+
+// readW3CMember reads a member's vector file as a JSON object, or names why
+// it cannot be read as one.
+func readW3CMember(dir string, v w3cVector) (map[string]any, string) {
+	if !existsIn(dir, v.File) {
+		return nil, "the manifest names a vector file that does not exist"
 	}
 	body, err := readIn(dir, v.File)
 	if err != nil {
-		out.Findings = append(out.Findings, err.Error())
-		return
+		return nil, err.Error()
 	}
 	document, err := decodeJSONNumbers(body)
 	if err != nil {
-		out.Findings = append(out.Findings, "the vector file does not parse: "+err.Error())
-		return
+		return nil, "the vector file does not parse: " + err.Error()
 	}
 	object, ok := document.(map[string]any)
 	if !ok {
-		out.Findings = append(out.Findings, "the vector file is not a JSON object")
-		return
+		return nil, "the vector file is not a JSON object"
 	}
+	return object, ""
+}
+
+// w3cIdentityFindings holds the vector file to its manifest row and its
+// identifier to the member's own bytes.
+func w3cIdentityFindings(object map[string]any, v w3cVector) []string {
+	var findings []string
 	entryValue, err := decodeJSONNumbers(mustMarshal(v))
 	if err != nil {
-		out.Findings = append(out.Findings, err.Error())
-		return
+		return append(findings, err.Error())
 	}
 	entry, _ := entryValue.(map[string]any)
 	for _, field := range w3cAgreeFields {
 		if !jsonEqual(object[field], entry[field]) {
-			out.Findings = append(out.Findings, "the vector file and the manifest disagree about "+field)
+			findings = append(findings, "the vector file and the manifest disagree about "+field)
 		}
 	}
 	if id, _ := object["id"].(string); id != v.ID {
-		out.Findings = append(out.Findings, "the vector file carries a different identifier")
+		findings = append(findings, "the vector file carries a different identifier")
 	}
 	if payload, err := w3cIDPayload(object); err != nil {
-		out.Findings = append(out.Findings, "the member has no RFC 8785 form: "+err.Error())
+		findings = append(findings, "the member has no RFC 8785 form: "+err.Error())
 	} else if idFromBytes(payload) != v.ID {
-		out.Findings = append(out.Findings, "identifier does not recompute from the member's own bytes")
+		findings = append(findings, "identifier does not recompute from the member's own bytes")
 	}
+	return findings
+}
+
+// w3cVerdictFindings judges the member's subject and compares the verdict,
+// and for a report the cause, with what the manifest expects.
+func w3cVerdictFindings(object map[string]any, v w3cVector) []string {
 	if shape := subjectShapeErrors(v.SubjectType, object["subject"]); len(shape) > 0 {
-		out.Findings = append(out.Findings, "the subject is not the shape its definition gives: "+strings.Join(shape, "; "))
-		return
+		return []string{"the subject is not the shape its definition gives: " + strings.Join(shape, "; ")}
 	}
 	var resolves map[string]any
 	if raw, present := object["resolves"]; present && raw != nil {
 		store, ok := raw.(map[string]any)
 		if !ok {
-			out.Findings = append(out.Findings, "resolves is present and is not an object")
-			return
+			return []string{"resolves is present and is not an object"}
 		}
 		resolves = store
 	}
@@ -288,9 +306,8 @@ func (w w3cReport) checkFile(dir string, v w3cVector, out *Member) {
 		expected = sortedStrings(*v.Expected.Rejects)
 	}
 	if strings.Join(observed, ",") != strings.Join(expected, ",") {
-		out.Findings = append(out.Findings, fmt.Sprintf(
-			"the validator rejects under %s and the manifest expects %s", w3cList(observed), w3cList(expected)))
-		return
+		return []string{fmt.Sprintf(
+			"the validator rejects under %s and the manifest expects %s", w3cList(observed), w3cList(expected))}
 	}
 	if stated := v.Expected.Cause; stated != nil && v.SubjectType == "report" {
 		named := w3cCheckSetCause(object["subject"].(map[string]any))
@@ -298,10 +315,11 @@ func (w w3cReport) checkFile(dir string, v w3cVector, out *Member) {
 			if named == "" {
 				named = "none"
 			}
-			out.Findings = append(out.Findings, fmt.Sprintf(
-				"the validator names the cause %s and the manifest expects %s", named, *stated))
+			return []string{fmt.Sprintf(
+				"the validator names the cause %s and the manifest expects %s", named, *stated)}
 		}
 	}
+	return nil
 }
 
 // w3cIDPayload is the RFC 8785 form of the fields a member's identifier
