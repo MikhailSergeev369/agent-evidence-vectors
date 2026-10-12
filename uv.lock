@@ -9,7 +9,7 @@ resolution-markers = [
 
 [[package]]
 name = "agent-evidence-vectors"
-version = "0.17.7"
+version = "0.17.8"
 source = { virtual = "." }
 
 [package.optional-dependencies]
