@@ -79,6 +79,7 @@ only-include = [
     "vectors-anchored-chain",
     "vectors-grade-floor",
     "vectors-agent-change-admission",
+    "vectors-agent-decision",
     "vectors-mcp-owasp",
     "vectors-aci",
     "vectors-acs-core",
@@ -112,6 +113,7 @@ exclude = ["**/__pycache__", "**/.build", "**/*.pyc", "vectors/**/*.py", "vector
 "vectors-anchored-chain" = "agent_evidence_vectors/corpora/vectors-anchored-chain"
 "vectors-grade-floor" = "agent_evidence_vectors/corpora/vectors-grade-floor"
 "vectors-agent-change-admission" = "agent_evidence_vectors/corpora/vectors-agent-change-admission"
+"vectors-agent-decision" = "agent_evidence_vectors/corpora/vectors-agent-decision"
 "vectors-mcp-owasp" = "agent_evidence_vectors/corpora/vectors-mcp-owasp"
 "vectors-aci" = "agent_evidence_vectors/corpora/vectors-aci"
 "vectors-acs-core" = "agent_evidence_vectors/corpora/vectors-acs-core"
@@ -172,6 +174,7 @@ only-include = [
     "vectors-anchored-chain",
     "vectors-grade-floor",
     "vectors-agent-change-admission",
+    "vectors-agent-decision",
     "vectors-mcp-owasp",
     "vectors-aci",
     "vectors-acs-core",
