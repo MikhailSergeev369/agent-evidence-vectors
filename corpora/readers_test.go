@@ -63,6 +63,9 @@ var corpusCases = []corpusCase{
 	// A member of the OWASP MCP verification corpus is one acceptance-test
 	// observation in one record file.
 	{dir: "vectors-mcp-owasp", memberFileKey: "record"},
+	// A member of the agent-decision corpus is one DSSE envelope in one file,
+	// with its disclosed arguments, where it has any, in a second.
+	{dir: "vectors-agent-decision", memberFileKey: "file"},
 }
 
 func corpusPath(dir string) string { return filepath.Join("..", dir) }
