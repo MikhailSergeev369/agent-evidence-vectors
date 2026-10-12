@@ -30,7 +30,7 @@ corpus and every row of its manifest. Rows that leak: 0.
 | `W3C-R-026` | 1 | 1 | 0 | isolated |
 | `W3C-R-019` | 1 | 1 | 0 | isolated |
 | `W3C-R-024` | 1 | 1 | 0 | isolated |
-| `W3C-R-016` | 43 | 43 | 0 | isolated |
+| `W3C-R-016` | 1 | 1 | 0 | isolated |
 | `W3C-R-021` | 1 | 1 | 0 | isolated |
 | `W3C-R-027` | 1 | 1 | 0 | isolated |
 | `W3C-R-028` | 1 | 1 | 0 | isolated |

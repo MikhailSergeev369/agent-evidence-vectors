@@ -138,7 +138,7 @@ flips when the one rule it rests on is weakened: the encoding section of
 `MUTATION-SWEEP.md` weakens each rule of the encoding in turn and records that
 only its own members flip. The members rest on proposed requirements, so they
 are counted as excluded-under-proposed-rule, beside the `W3C-R-022` members,
-and the section 10 selection stays 165 members, 83 to reject and 82 to accept.
+and the section 10 selection stays 165 members, 41 to reject and 124 to accept.
 
 ## Recompute a member's digest by hand
 
@@ -213,8 +213,14 @@ row leaks.
 
 Family `w3c-f-disensor` re-cuts the 42 delta-related pairs a participant
 counted in his own corpus at the commit the manifest names, each once as it
-was emitted before the freeze, rejected under the declared-slot rule with its
-cause, and once against v0.1, accepted. `origin/derive_pairs.py` derives the
+was emitted before the freeze, with the error list declared moved, and once
+against v0.1. Both are accepted. Section 2 of v0.1 says moved is recomputed,
+not declared, and rejects an object whose moved is not contained in its
+declared compared set; the recomputed moved of every pair is contained, and
+section 2.1 says no rejection row reads the recompute-opaque error list. Until
+v0.18.0 the readers held the declared moved against the compared set and
+rejected the 42 as emitted; the change moved those 42 members from reject to
+accept and renamed them. `origin/derive_pairs.py` derives the
 pairs from that repository and the checker it pins; the JSON it wrote is
 committed beside it and the generator reads only that. Each pair's two
 observations are referenced by commit, vector and digest and resolved through
