@@ -70,7 +70,12 @@ from those bytes by recomputation, not from code:
   record's RFC 8785 bytes. It reproduces every committed `flat` digest. The
   `rfc6962` and `RFC9162_SHA256` roots are the RFC 6962 section 2.1 Merkle
   Tree Hash, from the RFC;
-- `corpusDigest`: SHA-256 over the member files' bytes in manifest order.
+- `corpusDigest`: SHA-256 over the member files' bytes in identifier order.
+  (Corrected 2026-10-11: this line said manifest order, and the Rust reader
+  hashed in that order. Every committed manifest lists its members in
+  identifier order, so the two readings agreed on every corpus; the Rust reader
+  now sorts by identifier as the Go and Python readers do, and the parity test
+  judges a manifest listed in reverse.)
 
 ### Dependencies
 

@@ -93,6 +93,18 @@
       "author": "Roel Schuurkes",
       "source": "https://lists.w3.org/Archives/Public/public-agent-conformance/2026Sep/0088.html"
     },
+    "2026Oct-0038": {
+      "path": "spec-vendored/2026Oct-0038-kroehl-2026-10-10-digest-encoding.txt",
+      "sha256": "9b71fe89b22c9f8b0a20b85e3a9cc9b0e5ee0909b629bddeb26fd4728d255ec1",
+      "author": "Lars Kersten Kroehl",
+      "source": "https://lists.w3.org/Archives/Public/public-agent-conformance/2026Oct/0038.html"
+    },
+    "2026Oct-0040": {
+      "path": "spec-vendored/2026Oct-0040-ives-2026-10-10-numeric-profile.txt",
+      "sha256": "051ff39f291884c2d5b01edf4d0c9c477bbe78fe698f91cd6e72883dddeab35b",
+      "author": "Kenne Ives",
+      "source": "https://lists.w3.org/Archives/Public/public-agent-conformance/2026Oct/0040.html"
+    },
     "draft-arsentev-agent-run-metrics-00": {
       "path": "spec-vendored/draft-arsentev-agent-run-metrics-00.txt",
       "sha256": "0ef9e7fbc39d04bf2e245ed12b6a15eb4988d56abf3b07a65aab7861ad14d7f0",
@@ -150,6 +162,15 @@
       "flat",
       "rfc6962",
       "RFC9162_SHA256"
+    ],
+    "digest-encoding": [
+      "jcs-sha256"
+    ],
+    "digest-cause": [
+      "digests-differ",
+      "non-integer-number",
+      "integer-outside-safe-range",
+      "unsupported-digest-encoding"
     ],
     "changed": [
       "input artifact",
@@ -220,6 +241,14 @@
     "arm-f-usage": "agent run metrics: the Usage invariants and the cache-write ledger",
     "arm-f-totals": "agent run metrics: the totals as the sum of the steps",
     "arm-f-serialization": "agent run metrics: timestamps, identifiers, labels, cost and extensions",
+    "w3c-f-jcs-u007f": "digest encoding (proposed): RFC 8785 writes U+007F as itself, where an ASCII-escaping encoder writes \\u007f",
+    "w3c-f-jcs-non-ascii": "digest encoding (proposed): RFC 8785 writes a character above U+007F as UTF-8, where an ASCII-escaping encoder writes \\uXXXX or a surrogate pair",
+    "w3c-f-jcs-member-order": "digest encoding (proposed): RFC 8785 orders member names by UTF-16 code unit, which parts from code-point order on a supplementary-plane name",
+    "w3c-f-jcs-number-value": "digest encoding (proposed): a number is written as its value, so -0 and -0.0 read 0 and 1.0 and 1e2 read 1 and 100, never as the token written",
+    "w3c-f-jcs-safe-range": "numeric profile (proposed): an integer of magnitude 2^53 or more is refused, both boundaries and their neighbours, and travels as a string",
+    "w3c-f-jcs-1e21": "numeric profile (proposed): 10^21 is refused in digits and as an exponent, so its two spellings never reach a digest, and travels as a string",
+    "w3c-f-jcs-non-integer": "numeric profile (proposed): a number whose exact value is not an integer is refused, a token that rounds to an integer double included, and travels as a string",
+    "w3c-f-jcs-declaration": "declared encoding (proposed): a set binding declares jcs-sha256 or nothing; any other declaration is refused rather than read as the reader's own",
     "lcd-f-publisher": "context discovery: what the origin advertises and serves",
     "lcd-f-consumer": "context discovery: what a consumer resolves, retrieves and attributes"
   },
@@ -237,8 +266,10 @@
   },
   "mutationSweep": {
     "file": "MUTATION-SWEEP.md",
-    "rows": 62,
-    "leaks": 0
+    "rows": 65,
+    "leaks": 0,
+    "encodingRules": 7,
+    "encodingLeaks": 0
   },
   "observedRuns": [],
   "referenceEmitterRuns": [
@@ -652,6 +683,42 @@
       "resolvedRead": false
     },
     {
+      "id": "W3C-R-030",
+      "row": "3.1 digest encoding",
+      "file": "2026Oct-0038",
+      "vendored": "spec-vendored/2026Oct-0038-kroehl-2026-10-10-digest-encoding.txt",
+      "line": 19,
+      "sentence": "A digest taken over a JSON value is computed over the RFC 8785 canonical form of that value.",
+      "sentenceDigest": "b53c8bf547875a598fa4a865db1e16ccb9fa965b640a5029f4a6b2f1d8a6b2ed",
+      "specVersion": "0.1",
+      "class": "evidence",
+      "status": "proposed"
+    },
+    {
+      "id": "W3C-R-031",
+      "row": "3.1 numeric profile",
+      "file": "2026Oct-0040",
+      "vendored": "spec-vendored/2026Oct-0040-ives-2026-10-10-numeric-profile.txt",
+      "line": 10,
+      "sentence": "A reader rejects a report whose\ndigested value violates this, under W3C-R-020, naming the cause.",
+      "sentenceDigest": "9c35050921fdefb75004142bc83b3073f139dbd65f750c08f291c69264f9ffa8",
+      "specVersion": "0.1",
+      "class": "form",
+      "status": "proposed"
+    },
+    {
+      "id": "W3C-R-032",
+      "row": "3.1 declared encoding",
+      "file": "2026Oct-0038",
+      "vendored": "spec-vendored/2026Oct-0038-kroehl-2026-10-10-digest-encoding.txt",
+      "line": 19,
+      "sentence": "A reader that does not implement a report's declared digest encoding rejects the report and says so.",
+      "sentenceDigest": "42f9ab8f012587a943a6f3b82a9c6c82e00397999ae51872176bd28c08ea77c5",
+      "specVersion": "0.1",
+      "class": "form",
+      "status": "proposed"
+    },
+    {
       "id": "ARM-R-001",
       "row": "5.1",
       "file": "draft-arsentev-agent-run-metrics-00",
@@ -983,10 +1050,10 @@
     }
   ],
   "counts": {
-    "accept": 117,
-    "reject": 119
+    "accept": 130,
+    "reject": 137
   },
-  "corpusDigest": "76a189e2a73f1f635bc555176ca9660c988540f3e86e9d4f8dab64ebec47cc0d",
+  "corpusDigest": "e537b09f3267783be52b403939dc5c44b43a33fb0599d2f0f4369226e4729654",
   "note": "A member is a whole subject: a v0.1 report, a Run object, or a discovery snapshot. Each reject member is rejected under exactly one requirement and has an accepting twin in its family, so a validator that refuses every subject scores zero rather than full marks.",
   "vectors": [
     {
@@ -1139,6 +1206,26 @@
         },
         "cause": "moved asserts the recompute-opaque error list outside the declared compared set"
       }
+    },
+    {
+      "id": "v0a887e6b24bdd940",
+      "kind": "reject",
+      "file": "vectors/v0a887e6b24bdd940.json",
+      "family": "w3c-f-jcs-safe-range",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "integer-outside-safe-range"
+      },
+      "cites": "-(2^53+1), whose nearest double is -2^53"
     },
     {
       "id": "v0e286b53de78162a",
@@ -1306,6 +1393,26 @@
       "cites": "shown-by-run asserted on a run whose only non-pass is inconclusive: a non-pass that is not a fail verdict"
     },
     {
+      "id": "v16bbc5bfef80043e",
+      "kind": "reject",
+      "file": "vectors/v16bbc5bfef80043e.json",
+      "family": "w3c-f-jcs-safe-range",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "integer-outside-safe-range"
+      },
+      "cites": "2^53+1, whose nearest double is 2^53: a reader without the bound writes the root of a different integer, the one written here"
+    },
+    {
       "id": "v183b37dea5ad4159",
       "kind": "accept",
       "file": "vectors/v183b37dea5ad4159.json",
@@ -1331,6 +1438,23 @@
         },
         "cause": "none: moved is contained in the declared set and the verdict moved"
       }
+    },
+    {
+      "id": "v187e4435786b17f9",
+      "kind": "accept",
+      "file": "vectors/v187e4435786b17f9.json",
+      "family": "w3c-f-jcs-safe-range",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the neighbours outside the range carried as strings, which no reader parses as numbers"
     },
     {
       "id": "v1910c8190bcd1b5c",
@@ -1408,6 +1532,26 @@
         },
         "cause": "moved asserts the recompute-opaque error list outside the declared compared set"
       }
+    },
+    {
+      "id": "v1afe0d60b2df5d39",
+      "kind": "reject",
+      "file": "vectors/v1afe0d60b2df5d39.json",
+      "family": "w3c-f-jcs-non-integer",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "non-integer-number"
+      },
+      "cites": "0.99999999999999999, whose nearest double is 1: refused on its exact value, which a reader that judges the double instead would admit and write as 1"
     },
     {
       "id": "v1bb2e51524055d00",
@@ -1704,6 +1848,26 @@
       }
     },
     {
+      "id": "v26a379aeeebabd1e",
+      "kind": "reject",
+      "file": "vectors/v26a379aeeebabd1e.json",
+      "family": "w3c-f-jcs-non-integer",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "non-integer-number"
+      },
+      "cites": "0.5, a non-integral number in a check leaf"
+    },
+    {
       "id": "v27a01b14321f6ae5",
       "kind": "reject",
       "file": "vectors/v27a01b14321f6ae5.json",
@@ -1819,6 +1983,26 @@
       "cites": "a zero counter, which is a non-negative integer"
     },
     {
+      "id": "v2b4990ad53fbf28b",
+      "kind": "reject",
+      "file": "vectors/v2b4990ad53fbf28b.json",
+      "family": "w3c-f-jcs-non-integer",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "non-integer-number"
+      },
+      "cites": "1e-7, which RFC 8785 writes in exponent form"
+    },
+    {
       "id": "v2ddb14c9194e0341",
       "kind": "accept",
       "file": "vectors/v2ddb14c9194e0341.json",
@@ -1844,6 +2028,23 @@
         },
         "cause": "none: moved is contained in the declared set and the verdict moved"
       }
+    },
+    {
+      "id": "v2f563dc0b6fc9ec8",
+      "kind": "accept",
+      "file": "vectors/v2f563dc0b6fc9ec8.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the leaf with U+20AC, three bytes of UTF-8 written as UTF-8, as RFC 8785 writes it"
     },
     {
       "id": "v320406e03fff4faa",
@@ -1974,6 +2175,23 @@
       "cites": "a robots record advertising a file the same robots.txt disallows"
     },
     {
+      "id": "v392e5b863085868b",
+      "kind": "accept",
+      "file": "vectors/v392e5b863085868b.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the leaf with U+2028, the line separator ECMAScript once refused raw written as UTF-8, as RFC 8785 writes it"
+    },
+    {
       "id": "v3a14f94887e53e0d",
       "kind": "reject",
       "file": "vectors/v3a14f94887e53e0d.json",
@@ -2064,6 +2282,26 @@
       "cites": "a running Run, which carries no end"
     },
     {
+      "id": "v3fd6a6a262a72f91",
+      "kind": "reject",
+      "file": "vectors/v3fd6a6a262a72f91.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over the leaf with U+00E9, two bytes of UTF-8 written as \\uXXXX escapes, as the readers wrote it before RFC 8785"
+    },
+    {
       "id": "v3fef7c8cc4ed5e4b",
       "kind": "reject",
       "file": "vectors/v3fef7c8cc4ed5e4b.json",
@@ -2080,6 +2318,46 @@
         ]
       },
       "cites": "the other verdict asserted demonstrated by an object whose two observations both fail: moved, recomputed, holds the fired-rule list and not the verdict"
+    },
+    {
+      "id": "v40ab7c6deec16438",
+      "kind": "reject",
+      "file": "vectors/v40ab7c6deec16438.json",
+      "family": "w3c-f-jcs-1e21",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "integer-outside-safe-range"
+      },
+      "cites": "10^21 as the exponent token 1e21, refused; a reader without the bound writes 1e+21, as RFC 8785 writes it"
+    },
+    {
+      "id": "v4193637206138b32",
+      "kind": "reject",
+      "file": "vectors/v4193637206138b32.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over the leaf with U+1F600, a supplementary-plane character written as \\uXXXX escapes, as the readers wrote it before RFC 8785"
     },
     {
       "id": "v42d2d180b1c0b5b3",
@@ -2312,6 +2590,23 @@
       "cites": "a control built to fail that ran and reached no conclusion: failing to execute does not show the check can reject the input"
     },
     {
+      "id": "v4e8fc1ab4f3fc5b3",
+      "kind": "accept",
+      "file": "vectors/v4e8fc1ab4f3fc5b3.json",
+      "family": "w3c-f-jcs-number-value",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the leaf with 1.0 and 1e2 written as 1 and 100, their values"
+    },
+    {
       "id": "v4f343e8bd3d6af08",
       "kind": "accept",
       "file": "vectors/v4f343e8bd3d6af08.json",
@@ -2342,6 +2637,46 @@
         "rejects": []
       },
       "cites": "the error list declared compared, so moved is contained; no row reads the opaque slot"
+    },
+    {
+      "id": "v5196f1761ea14b2b",
+      "kind": "reject",
+      "file": "vectors/v5196f1761ea14b2b.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over the leaf with U+20AC, three bytes of UTF-8 written as \\uXXXX escapes, as the readers wrote it before RFC 8785"
+    },
+    {
+      "id": "v522b0a6b91e74c95",
+      "kind": "reject",
+      "file": "vectors/v522b0a6b91e74c95.json",
+      "family": "w3c-f-jcs-safe-range",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "integer-outside-safe-range"
+      },
+      "cites": "-2^53, the neighbour just outside the range below"
     },
     {
       "id": "v5390d3d7133f3963",
@@ -2400,6 +2735,23 @@
         },
         "cause": "moved asserts the recompute-opaque error list outside the declared compared set"
       }
+    },
+    {
+      "id": "v55772816f872150f",
+      "kind": "accept",
+      "file": "vectors/v55772816f872150f.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the leaf with U+00E9, two bytes of UTF-8 written as UTF-8, as RFC 8785 writes it"
     },
     {
       "id": "v568e8a1311ecb396",
@@ -2522,6 +2874,80 @@
         ]
       },
       "cites": "an accounting claim over a population the report does not carry"
+    },
+    {
+      "id": "v5f92e1d7ef255730",
+      "kind": "accept",
+      "file": "vectors/v5f92e1d7ef255730.json",
+      "family": "w3c-f-jcs-safe-range",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "both boundaries of the range, 2^53-1 and -(2^53-1), and the neighbours inside them"
+    },
+    {
+      "id": "v606504b1125a3885",
+      "kind": "accept",
+      "file": "vectors/v606504b1125a3885.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the leaf with U+1F600, a supplementary-plane character written as UTF-8, as RFC 8785 writes it"
+    },
+    {
+      "id": "v60bd06deca6e832d",
+      "kind": "reject",
+      "file": "vectors/v60bd06deca6e832d.json",
+      "family": "w3c-f-jcs-u007f",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over the leaf with U+007F written as \\u007f, as the readers wrote it before RFC 8785"
+    },
+    {
+      "id": "v64e02942221729d2",
+      "kind": "reject",
+      "file": "vectors/v64e02942221729d2.json",
+      "family": "w3c-f-jcs-declaration",
+      "requirements": [
+        "W3C-R-015",
+        "W3C-R-032"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-015"
+        ],
+        "cause": "unsupported-digest-encoding"
+      },
+      "cites": "a binding that declares the encoding the readers used before RFC 8785, outside the closed set: refused by name, never read as the reader's own"
     },
     {
       "id": "v668c618f2a50e26e",
@@ -3087,6 +3513,23 @@
       "cites": "the same record with a cause that describes a unit left out of the count"
     },
     {
+      "id": "v822c4bed9ba714d3",
+      "kind": "accept",
+      "file": "vectors/v822c4bed9ba714d3.json",
+      "family": "w3c-f-jcs-u007f",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the leaf with U+007F written as the byte 0x7f, as RFC 8785 writes it"
+    },
+    {
       "id": "v827901388ec40c23",
       "kind": "accept",
       "file": "vectors/v827901388ec40c23.json",
@@ -3144,6 +3587,26 @@
         "rejects": []
       },
       "cites": "a model invocation carrying usage and model"
+    },
+    {
+      "id": "v8474a83c45f293fc",
+      "kind": "reject",
+      "file": "vectors/v8474a83c45f293fc.json",
+      "family": "w3c-f-jcs-non-ascii",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over the leaf with U+2028, the line separator ECMAScript once refused raw written as \\uXXXX escapes, as the readers wrote it before RFC 8785"
     },
     {
       "id": "v84f8c68bc5fc2810",
@@ -3349,6 +3812,40 @@
       "cites": "timestamps carrying a local offset"
     },
     {
+      "id": "v900fc651cea938e9",
+      "kind": "accept",
+      "file": "vectors/v900fc651cea938e9.json",
+      "family": "w3c-f-jcs-1e21",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "10^21 carried as a string in both spellings, so no digest has to choose one"
+    },
+    {
+      "id": "v91f45fe53b9cb4f7",
+      "kind": "accept",
+      "file": "vectors/v91f45fe53b9cb4f7.json",
+      "family": "w3c-f-jcs-non-integer",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "non-integral numbers carried as strings"
+    },
+    {
       "id": "v96087777a4afe26f",
       "kind": "reject",
       "file": "vectors/v96087777a4afe26f.json",
@@ -3464,6 +3961,26 @@
       "cites": "a robots record advertising a file its exclusion rules allow"
     },
     {
+      "id": "v9d05fc7c9c249317",
+      "kind": "reject",
+      "file": "vectors/v9d05fc7c9c249317.json",
+      "family": "w3c-f-jcs-member-order",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over member names U+FB33 and U+1F600 sorted by code point, which puts U+FB33 first"
+    },
+    {
       "id": "v9dc96e6ca225e6e2",
       "kind": "accept",
       "file": "vectors/v9dc96e6ca225e6e2.json",
@@ -3494,6 +4011,26 @@
         "rejects": []
       },
       "cites": "the same run reporting the empty population as not claimable"
+    },
+    {
+      "id": "v9ff65c5b03dd074c",
+      "kind": "reject",
+      "file": "vectors/v9ff65c5b03dd074c.json",
+      "family": "w3c-f-jcs-number-value",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over the leaf with -0 and -0.0 written as their tokens"
     },
     {
       "id": "va0620b488f2ff2f5",
@@ -3675,6 +4212,26 @@
         ]
       },
       "cites": "a control that failed under another checker than the one the reported checks ran under"
+    },
+    {
+      "id": "va8dfb25c6d62d458",
+      "kind": "reject",
+      "file": "vectors/va8dfb25c6d62d458.json",
+      "family": "w3c-f-jcs-safe-range",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "integer-outside-safe-range"
+      },
+      "cites": "2^53, the neighbour just outside the range, with the root a reader without the bound writes over it"
     },
     {
       "id": "va91d537fa714f2d3",
@@ -3925,6 +4482,26 @@
         "rejects": []
       },
       "cites": "cached reads equal to the input tokens"
+    },
+    {
+      "id": "vb37f841c9e91bf18",
+      "kind": "reject",
+      "file": "vectors/vb37f841c9e91bf18.json",
+      "family": "w3c-f-jcs-1e21",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-031"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "integer-outside-safe-range"
+      },
+      "cites": "10^21 in digits, the spelling the readers wrote before RFC 8785, refused; a reader without the bound writes 1e+21 for it, the root written here"
     },
     {
       "id": "vb450f39bace98641",
@@ -4426,6 +5003,26 @@
       }
     },
     {
+      "id": "vc3fa59108d1ead8a",
+      "kind": "reject",
+      "file": "vectors/vc3fa59108d1ead8a.json",
+      "family": "w3c-f-jcs-number-value",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "reject",
+        "rejects": [
+          "W3C-R-020"
+        ],
+        "cause": "digests-differ"
+      },
+      "cites": "a root over the leaf with 1.0 and 1e2 written as their tokens"
+    },
+    {
       "id": "vc58647a590befbb7",
       "kind": "reject",
       "file": "vectors/vc58647a590befbb7.json",
@@ -4548,6 +5145,23 @@
         },
         "cause": "moved asserts the recompute-opaque error list outside the declared compared set"
       }
+    },
+    {
+      "id": "vccb24c478c736bc5",
+      "kind": "accept",
+      "file": "vectors/vccb24c478c736bc5.json",
+      "family": "w3c-f-jcs-member-order",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the same names sorted by UTF-16 code unit, which puts U+1F600 first (its lead surrogate is 0xD83D)"
     },
     {
       "id": "vccc374459c05dd52",
@@ -5684,6 +6298,23 @@
       "cites": "an unprefixed member the specification does not define"
     },
     {
+      "id": "vf3fbd991d8e666a4",
+      "kind": "accept",
+      "file": "vectors/vf3fbd991d8e666a4.json",
+      "family": "w3c-f-jcs-number-value",
+      "requirements": [
+        "W3C-R-020",
+        "W3C-R-030"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "the root over the leaf with -0 and -0.0 written as 0, their value, as RFC 8785 writes them"
+    },
+    {
       "id": "vf414a4c9065ad7b8",
       "kind": "reject",
       "file": "vectors/vf414a4c9065ad7b8.json",
@@ -5814,6 +6445,23 @@
         "rejects": []
       },
       "cites": "demonstrated with the reference that carries it"
+    },
+    {
+      "id": "vfacf2b3dafdb5c0a",
+      "kind": "accept",
+      "file": "vectors/vfacf2b3dafdb5c0a.json",
+      "family": "w3c-f-jcs-declaration",
+      "requirements": [
+        "W3C-R-015",
+        "W3C-R-032"
+      ],
+      "specVersion": "0.1",
+      "subjectType": "report",
+      "expected": {
+        "verdict": "accept",
+        "rejects": []
+      },
+      "cites": "a binding that declares jcs-sha256, the one member of the closed set"
     },
     {
       "id": "vfbc5db1c2a012359",

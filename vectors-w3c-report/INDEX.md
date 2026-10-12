@@ -1,19 +1,33 @@
 # Conformance vectors (v0.1 per-check report)
 
 Every member of this suite in one table, rejected and accepted alike. Ground
-truth: 16 texts vendored in `spec-vendored/` and pinned by sha256 in
+truth: 18 texts vendored in `spec-vendored/` and pinned by sha256 in
 `MANIFEST.json`: 14 messages of the W3C public-agent-conformance list that
-together fix what v0.1 of the reporting format freezes, and the two
-Internet-Drafts the format's editor holds.
+together fix what v0.1 of the reporting format freezes, 2 messages that
+propose the digest encoding after it froze, and the two Internet-Drafts the
+format's editor holds.
 
-This corpus is 236 vectors, of which 117 a conformant verifier must not fail closed
-on and 119 it must reject.
+This corpus is 267 vectors, of which 130 a conformant verifier must not fail closed
+on and 137 it must reject.
 
-**Three subject types, one manifest.** 169 members are whole
+**Three subject types, one manifest.** 200 members are whole
 v0.1 reports, judged by the rows of the format; 45
 are Run objects of the agent-run-metrics draft; 22
 are discovery snapshots of the context-discovery draft. Each member names its
 subject type and the reader selects the validator by it.
+
+**The section 10 selection is 165 members**:
+the report members whose requirements are all agreed, 83 to
+reject and 82 to accept. A report member that cites a
+proposed requirement rests on a rule the v0.1 text does not hold, so it is
+counted apart, as excluded-under-proposed-rule, 35 members:
+
+| proposed requirement cited | reject | accept |
+|---|---|---|
+| W3C-R-022 | 2 | 2 |
+| W3C-R-030 | 8 | 8 |
+| W3C-R-031 | 9 | 4 |
+| W3C-R-032 | 1 | 1 |
 
 **A report member is a whole report**, not one record, because two of the rules
 v0.1 carries are properties of the report: whether its roll-up says its checks
@@ -41,9 +55,11 @@ pairs from that repository and `origin/disensor-1e36257-pairs.json` is what it
 wrote.
 
 Regenerate byte-identically: `python3 gen_vectors.py`.
-Self-check: `aee-verify vectors-w3c-report/` from the repository root, or
-`python3 packaging/run_vectors.py --corpus vectors-w3c-report`; the two print
-the same lines.
+Self-check from the repository root: `aee-verify vectors-w3c-report/`,
+`python3 packaging/run_vectors.py --corpus vectors-w3c-report`, or the Rust
+reader, `cargo run --release --locked --manifest-path
+readers/w3c-report-rs/Cargo.toml -- vectors-w3c-report`; the three print the
+same lines.
 
 ## Vendored text
 
@@ -63,6 +79,8 @@ the same lines.
 | `0077` | Nicolas Rocchia | `spec-vendored/0077-rocchia-2026-09-23-v01-answers.txt` | `88531111f9d8c424` | https://lists.w3.org/Archives/Public/public-agent-conformance/2026Sep/0077.html |
 | `0087` | Evgenii Arsentev | `spec-vendored/0087-arsentev-2026-09-30-v01.txt` | `35625d73baa56f27` | https://lists.w3.org/Archives/Public/public-agent-conformance/2026Sep/0087.html |
 | `0088` | Roel Schuurkes | `spec-vendored/0088-schuurkes-2026-09-30-v01-row4.txt` | `d22914e6146f1fb1` | https://lists.w3.org/Archives/Public/public-agent-conformance/2026Sep/0088.html |
+| `2026Oct-0038` | Lars Kersten Kroehl | `spec-vendored/2026Oct-0038-kroehl-2026-10-10-digest-encoding.txt` | `9b71fe89b22c9f8b` | https://lists.w3.org/Archives/Public/public-agent-conformance/2026Oct/0038.html |
+| `2026Oct-0040` | Kenne Ives | `spec-vendored/2026Oct-0040-ives-2026-10-10-numeric-profile.txt` | `051ff39f291884c2` | https://lists.w3.org/Archives/Public/public-agent-conformance/2026Oct/0040.html |
 | `draft-arsentev-agent-run-metrics-00` | Evgenii Arsentev | `spec-vendored/draft-arsentev-agent-run-metrics-00.txt` | `0ef9e7fbc39d04bf` | https://datatracker.ietf.org/doc/draft-arsentev-agent-run-metrics/ |
 | `draft-arsentev-llm-context-discovery-00` | Evgenii Arsentev | `spec-vendored/draft-arsentev-llm-context-discovery-00.txt` | `13081268c70a19e9` | https://datatracker.ietf.org/doc/draft-arsentev-llm-context-discovery/ |
 
@@ -106,6 +124,9 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `W3C-R-014` | 5.4 prior run | consistency | agreed | `spec-vendored/0087-arsentev-2026-09-30-v01.txt` | `cc10241a9f88472c` | A prior run only counts where check identity survives across     runs |
 | `W3C-R-029` | 5.4 control binding | consistency | agreed | `spec-vendored/0087-arsentev-2026-09-30-v01.txt` | `4160b21d27d64e6a` | The control runs under the same checker revision and the same     relevant configuration and constraints as the declared checks     whose negative capability it is reported for |
 | `W3C-R-022` | coverage block | form | proposed | `spec-vendored/0001-ives-2026-09-01-coverage-block.txt` | `50c6f490bcf092b2` | a sampled / full_coverage flag with the count of scannable files recorded before the per-repo cap |
+| `W3C-R-030` | 3.1 digest encoding | evidence | proposed | `spec-vendored/2026Oct-0038-kroehl-2026-10-10-digest-encoding.txt` | `b53c8bf547875a59` | A digest taken over a JSON value is computed over the RFC 8785 canonical form of that value. |
+| `W3C-R-031` | 3.1 numeric profile | form | proposed | `spec-vendored/2026Oct-0040-ives-2026-10-10-numeric-profile.txt` | `9c35050921fdefb7` | A reader rejects a report whose digested value violates this, under W3C-R-020, naming the cause. |
+| `W3C-R-032` | 3.1 declared encoding | form | proposed | `spec-vendored/2026Oct-0038-kroehl-2026-10-10-digest-encoding.txt` | `42f9ab8f012587a9` | A reader that does not implement a report's declared digest encoding rejects the report and says so. |
 | `ARM-R-001` | 5.1 | - | - | `spec-vendored/draft-arsentev-agent-run-metrics-00.txt` | `f313511759b2f6ce` | Reporter MUST emit "1" while conforming to this specification |
 | `ARM-R-002` | 3.1 | - | - | `spec-vendored/draft-arsentev-agent-run-metrics-00.txt` | `a82c8c4e90b439d6` | The "end" member MUST be present when "status" is "completed",    "failed" or "aborted", and MUST NOT be present when "status" is    "running" |
 | `ARM-R-003` | 3.1 | - | - | `spec-vendored/draft-arsentev-agent-run-metrics-00.txt` | `1651e4aa28aef3c5` | When present, "end" MUST NOT be earlier than "start" |
@@ -180,6 +201,14 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `arm-f-usage` | agent run metrics: the Usage invariants and the cache-write ledger |
 | `arm-f-totals` | agent run metrics: the totals as the sum of the steps |
 | `arm-f-serialization` | agent run metrics: timestamps, identifiers, labels, cost and extensions |
+| `w3c-f-jcs-u007f` | digest encoding (proposed): RFC 8785 writes U+007F as itself, where an ASCII-escaping encoder writes \u007f |
+| `w3c-f-jcs-non-ascii` | digest encoding (proposed): RFC 8785 writes a character above U+007F as UTF-8, where an ASCII-escaping encoder writes \uXXXX or a surrogate pair |
+| `w3c-f-jcs-member-order` | digest encoding (proposed): RFC 8785 orders member names by UTF-16 code unit, which parts from code-point order on a supplementary-plane name |
+| `w3c-f-jcs-number-value` | digest encoding (proposed): a number is written as its value, so -0 and -0.0 read 0 and 1.0 and 1e2 read 1 and 100, never as the token written |
+| `w3c-f-jcs-safe-range` | numeric profile (proposed): an integer of magnitude 2^53 or more is refused, both boundaries and their neighbours, and travels as a string |
+| `w3c-f-jcs-1e21` | numeric profile (proposed): 10^21 is refused in digits and as an exponent, so its two spellings never reach a digest, and travels as a string |
+| `w3c-f-jcs-non-integer` | numeric profile (proposed): a number whose exact value is not an integer is refused, a token that rounds to an integer double included, and travels as a string |
+| `w3c-f-jcs-declaration` | declared encoding (proposed): a set binding declares jcs-sha256 or nothing; any other declaration is refused rather than read as the reader's own |
 | `lcd-f-publisher` | context discovery: what the origin advertises and serves |
 | `lcd-f-consumer` | context discovery: what a consumer resolves, retrieves and attributes |
 
@@ -194,6 +223,7 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v050e5667630b8bf7` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v068436e239f3711a` | accept | agent-run-metrics | arm-f-run | ARM-R-005 | none |
 | `v086f61b528d28efd` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
+| `v0a887e6b24bdd940` | reject | report | w3c-f-jcs-safe-range | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `v0e286b53de78162a` | reject | report | w3c-f-8 | W3C-R-008 | W3C-R-008 |
 | `v0f620037c42bbfc3` | accept | report | w3c-f-22 | W3C-R-022 | none |
 | `v0f648c5f3080e1b1` | accept | agent-run-metrics | arm-f-steps | ARM-R-015 | none |
@@ -203,11 +233,14 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v12f1e7e27b3f59c5` | reject | llm-context-discovery | lcd-f-consumer | LCD-R-006 | LCD-R-006 |
 | `v148fc59046a8548a` | accept | report | w3c-f-15 | W3C-R-015 | none |
 | `v1660acd2e4efb7c7` | reject | report | w3c-f-13 | W3C-R-013 | W3C-R-013 |
+| `v16bbc5bfef80043e` | reject | report | w3c-f-jcs-safe-range | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `v183b37dea5ad4159` | accept | report | w3c-f-disensor | W3C-R-016 | none |
+| `v187e4435786b17f9` | accept | report | w3c-f-jcs-safe-range | W3C-R-020, W3C-R-031 | none |
 | `v1910c8190bcd1b5c` | accept | llm-context-discovery | lcd-f-publisher | LCD-R-002 | none |
 | `v191fc069115f8706` | accept | llm-context-discovery | lcd-f-consumer | LCD-R-007 | none |
 | `v1a0f984d88bb9fe2` | accept | report | w3c-f-8 | W3C-R-008 | none |
 | `v1a5c0a7b37f5d2c4` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
+| `v1afe0d60b2df5d39` | reject | report | w3c-f-jcs-non-integer | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `v1bb2e51524055d00` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v1bc07a427d07bb7f` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v1c020dd1ed49874c` | reject | report | w3c-f-17 | W3C-R-017 | W3C-R-017 |
@@ -220,24 +253,31 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v25ba541b9d311416` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v2652b0b04c946504` | reject | agent-run-metrics | arm-f-serialization | ARM-R-020 | ARM-R-020 |
 | `v265c2e6f0a3d31f6` | accept | report | w3c-f-disensor | W3C-R-016 | none |
+| `v26a379aeeebabd1e` | reject | report | w3c-f-jcs-non-integer | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `v27a01b14321f6ae5` | reject | report | w3c-f-19 | W3C-R-019 | W3C-R-019 |
 | `v28820b464a335617` | reject | report | w3c-f-15 | W3C-R-015 | W3C-R-015 |
 | `v28824a66a84f4b8c` | reject | agent-run-metrics | arm-f-usage | ARM-R-013 | ARM-R-013 |
 | `v2a251ae413920da5` | accept | report | w3c-f-19 | W3C-R-019 | none |
 | `v2a90adc95b2fbdaf` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v2b052236457b678c` | accept | agent-run-metrics | arm-f-usage | ARM-R-009 | none |
+| `v2b4990ad53fbf28b` | reject | report | w3c-f-jcs-non-integer | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `v2ddb14c9194e0341` | accept | report | w3c-f-disensor | W3C-R-016 | none |
+| `v2f563dc0b6fc9ec8` | accept | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | none |
 | `v320406e03fff4faa` | accept | report | w3c-f-5 | W3C-R-005 | none |
 | `v32c1e0be1a7bf104` | reject | agent-run-metrics | arm-f-run | ARM-R-016 | ARM-R-016 |
 | `v32c6afab9eb5888a` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v36999d5568e9aacf` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v37729703d471ba9b` | reject | report | w3c-f-23 | W3C-R-023 | W3C-R-023 |
 | `v388dee224f53c2c1` | reject | llm-context-discovery | lcd-f-publisher | LCD-R-005 | LCD-R-005 |
+| `v392e5b863085868b` | accept | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | none |
 | `v3a14f94887e53e0d` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v3add8861d36c2543` | reject | agent-run-metrics | arm-f-steps | ARM-R-008 | ARM-R-008 |
 | `v3aef8ba9ac745dbf` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v3d5079f23e498451` | accept | agent-run-metrics | arm-f-run | ARM-R-002 | none |
+| `v3fd6a6a262a72f91` | reject | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | W3C-R-020 |
 | `v3fef7c8cc4ed5e4b` | reject | report | w3c-f-25 | W3C-R-025 | W3C-R-025 |
+| `v40ab7c6deec16438` | reject | report | w3c-f-jcs-1e21 | W3C-R-020, W3C-R-031 | W3C-R-020 |
+| `v4193637206138b32` | reject | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | W3C-R-020 |
 | `v42d2d180b1c0b5b3` | accept | report | w3c-f-22 | W3C-R-022 | none |
 | `v44f7a4acc7f66fa4` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v472759709d82c585` | accept | report | w3c-f-20 | W3C-R-020 | none |
@@ -249,16 +289,24 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v4a06b866afca0d49` | reject | report | w3c-f-15 | W3C-R-015 | W3C-R-015 |
 | `v4c778d3ee20deb35` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v4e4face5dd4ff492` | reject | report | w3c-f-13 | W3C-R-013 | W3C-R-013 |
+| `v4e8fc1ab4f3fc5b3` | accept | report | w3c-f-jcs-number-value | W3C-R-020, W3C-R-030 | none |
 | `v4f343e8bd3d6af08` | accept | report | w3c-f-20 | W3C-R-020 | none |
 | `v518aa8d55ab5460b` | accept | report | w3c-f-16 | W3C-R-016 | none |
+| `v5196f1761ea14b2b` | reject | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | W3C-R-020 |
+| `v522b0a6b91e74c95` | reject | report | w3c-f-jcs-safe-range | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `v5390d3d7133f3963` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v54dea8bab0674755` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
+| `v55772816f872150f` | accept | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | none |
 | `v568e8a1311ecb396` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v56b6337b612b1ee3` | accept | report | w3c-f-12 | W3C-R-012 | none |
 | `v56f37afaff2a6ca8` | accept | report | w3c-f-25 | W3C-R-025 | none |
 | `v5a2ff35648828621` | reject | report | w3c-f-9 | W3C-R-009 | W3C-R-009 |
 | `v5a678e8560a4f0f1` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v5c26b11179a2277a` | reject | report | w3c-f-23 | W3C-R-023 | W3C-R-023 |
+| `v5f92e1d7ef255730` | accept | report | w3c-f-jcs-safe-range | W3C-R-020, W3C-R-031 | none |
+| `v606504b1125a3885` | accept | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | none |
+| `v60bd06deca6e832d` | reject | report | w3c-f-jcs-u007f | W3C-R-020, W3C-R-030 | W3C-R-020 |
+| `v64e02942221729d2` | reject | report | w3c-f-jcs-declaration | W3C-R-015, W3C-R-032 | W3C-R-015 |
 | `v668c618f2a50e26e` | accept | agent-run-metrics | arm-f-run | ARM-R-003 | none |
 | `v66fd68ad7d106fac` | reject | report | w3c-f-14 | W3C-R-014 | W3C-R-014 |
 | `v67727ceb5f2f7932` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
@@ -286,9 +334,11 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v81c7f6fc68ea35a7` | accept | agent-run-metrics | arm-f-serialization | ARM-R-019 | none |
 | `v8224d0f41c80f492` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v822b02c01fe9ddd2` | accept | report | w3c-f-3 | W3C-R-003 | none |
+| `v822c4bed9ba714d3` | accept | report | w3c-f-jcs-u007f | W3C-R-020, W3C-R-030 | none |
 | `v827901388ec40c23` | accept | agent-run-metrics | arm-f-totals | ARM-R-012 | none |
 | `v828ec4d8309aa2e3` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v838fe3be3393696c` | accept | agent-run-metrics | arm-f-steps | ARM-R-007 | none |
+| `v8474a83c45f293fc` | reject | report | w3c-f-jcs-non-ascii | W3C-R-020, W3C-R-030 | W3C-R-020 |
 | `v84f8c68bc5fc2810` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v85c0428fc7fdabc7` | accept | llm-context-discovery | lcd-f-publisher | LCD-R-001 | none |
 | `v85db98532abea6d9` | reject | llm-context-discovery | lcd-f-consumer | LCD-R-007 | LCD-R-007 |
@@ -299,14 +349,18 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v8b06a7e78dc8d039` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v8c15455bb3d933cb` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `v8d4e61737e9ee6a6` | reject | agent-run-metrics | arm-f-serialization | ARM-R-019 | ARM-R-019 |
+| `v900fc651cea938e9` | accept | report | w3c-f-jcs-1e21 | W3C-R-020, W3C-R-031 | none |
+| `v91f45fe53b9cb4f7` | accept | report | w3c-f-jcs-non-integer | W3C-R-020, W3C-R-031 | none |
 | `v96087777a4afe26f` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v9815e1f08a7e0664` | reject | agent-run-metrics | arm-f-run | ARM-R-003 | ARM-R-003 |
 | `v98252c989e84999d` | reject | report | w3c-f-3 | W3C-R-003 | W3C-R-003 |
 | `v9b7c8cf7d1b9f679` | accept | report | w3c-f-26 | W3C-R-026 | none |
 | `v9c68a108ed63da63` | reject | report | w3c-f-21 | W3C-R-021 | W3C-R-021 |
 | `v9cfb2c8197757948` | accept | llm-context-discovery | lcd-f-publisher | LCD-R-005 | none |
+| `v9d05fc7c9c249317` | reject | report | w3c-f-jcs-member-order | W3C-R-020, W3C-R-030 | W3C-R-020 |
 | `v9dc96e6ca225e6e2` | accept | agent-run-metrics | arm-f-run | ARM-R-016 | none |
 | `v9f618dfd3e44b84a` | accept | report | w3c-f-23 | W3C-R-023 | none |
+| `v9ff65c5b03dd074c` | reject | report | w3c-f-jcs-number-value | W3C-R-020, W3C-R-030 | W3C-R-020 |
 | `va0620b488f2ff2f5` | accept | report | w3c-f-28 | W3C-R-028 | none |
 | `va18bfa567e0405b7` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `va19ba1b3f9f382bb` | accept | report | w3c-f-disensor | W3C-R-016 | none |
@@ -316,6 +370,7 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `va3c277aa6743807a` | reject | report | w3c-f-24 | W3C-R-024 | W3C-R-024 |
 | `va4fc9fc8f711bd58` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `va86e962a5024f152` | reject | report | w3c-f-29 | W3C-R-029 | W3C-R-029 |
+| `va8dfb25c6d62d458` | reject | report | w3c-f-jcs-safe-range | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `va91d537fa714f2d3` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `va934761de6c65857` | reject | agent-run-metrics | arm-f-run | ARM-R-001 | ARM-R-001 |
 | `vaac3a24b2552738b` | reject | agent-run-metrics | arm-f-serialization | ARM-R-017 | ARM-R-017 |
@@ -328,6 +383,7 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `vb11134a37e7c0c2b` | reject | report | w3c-f-1 | W3C-R-001 | W3C-R-001 |
 | `vb195f23e8436fd19` | accept | report | w3c-f-13 | W3C-R-013 | none |
 | `vb1c8d4729c06472c` | accept | agent-run-metrics | arm-f-usage | ARM-R-010 | none |
+| `vb37f841c9e91bf18` | reject | report | w3c-f-jcs-1e21 | W3C-R-020, W3C-R-031 | W3C-R-020 |
 | `vb450f39bace98641` | accept | llm-context-discovery | lcd-f-consumer | LCD-R-011 | none |
 | `vb4de5d37845a1546` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `vb608f4ddfcc00a20` | reject | llm-context-discovery | lcd-f-publisher | LCD-R-004 | LCD-R-004 |
@@ -349,12 +405,14 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `vc17bb5b854981008` | reject | agent-run-metrics | arm-f-usage | ARM-R-009 | ARM-R-009 |
 | `vc2cab6dea09f0a3b` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `vc39c75a8c00ab957` | accept | report | w3c-f-disensor | W3C-R-016 | none |
+| `vc3fa59108d1ead8a` | reject | report | w3c-f-jcs-number-value | W3C-R-020, W3C-R-030 | W3C-R-020 |
 | `vc58647a590befbb7` | reject | report | w3c-f-13 | W3C-R-013 | W3C-R-013 |
 | `vc653bb099d9c5839` | accept | report | w3c-f-disensor | W3C-R-016 | none |
 | `vc7c310827b9dbd10` | accept | agent-run-metrics | arm-f-run | ARM-R-001 | none |
 | `vc938b2ab36cae34a` | accept | report | w3c-f-27 | W3C-R-027 | none |
 | `vcbd0eaef95bc9181` | reject | llm-context-discovery | lcd-f-publisher | LCD-R-010 | LCD-R-010 |
 | `vcc4002f4776bac10` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
+| `vccb24c478c736bc5` | accept | report | w3c-f-jcs-member-order | W3C-R-020, W3C-R-030 | none |
 | `vccc374459c05dd52` | reject | agent-run-metrics | arm-f-steps | ARM-R-006 | ARM-R-006 |
 | `vcd6021208e8e8a6e` | accept | llm-context-discovery | lcd-f-consumer | LCD-R-006 | none |
 | `vcdb9ae63a12852a8` | accept | agent-run-metrics | arm-f-serialization | ARM-R-021 | none |
@@ -409,6 +467,7 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `vf2fde28af69a1348` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `vf374114fe7f28e7d` | reject | report | w3c-f-2 | W3C-R-002 | W3C-R-002 |
 | `vf3af943ff1bf7375` | reject | agent-run-metrics | arm-f-serialization | ARM-R-021 | ARM-R-021 |
+| `vf3fbd991d8e666a4` | accept | report | w3c-f-jcs-number-value | W3C-R-020, W3C-R-030 | none |
 | `vf414a4c9065ad7b8` | reject | agent-run-metrics | arm-f-steps | ARM-R-015 | ARM-R-015 |
 | `vf7334aa7dcf00826` | accept | agent-run-metrics | arm-f-run | ARM-R-004 | none |
 | `vf753bb908231e0a1` | accept | llm-context-discovery | lcd-f-consumer | LCD-R-008 | none |
@@ -417,9 +476,302 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `vf9b5623144960dda` | accept | report | w3c-f-9 | W3C-R-009 | none |
 | `vfa24e4f45c2e826e` | accept | report | w3c-f-20 | W3C-R-020 | none |
 | `vfa79ad0a7bd957b9` | accept | report | w3c-f-11 | W3C-R-011 | none |
+| `vfacf2b3dafdb5c0a` | accept | report | w3c-f-jcs-declaration | W3C-R-015, W3C-R-032 | none |
 | `vfbc5db1c2a012359` | reject | report | w3c-f-15 | W3C-R-015 | W3C-R-015 |
 | `vfbd7379026575f04` | accept | report | w3c-f-gaps | W3C-R-001, W3C-R-002 | none |
 | `vfbf04f56b585e3fa` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `vfeb5d1872929ab35` | accept | llm-context-discovery | lcd-f-publisher | LCD-R-010 | none |
 | `vff5545c0760d7544` | accept | agent-run-metrics | arm-f-usage | ARM-R-013 | none |
 | `vff8f75223d6658ef` | reject | llm-context-discovery | lcd-f-publisher | LCD-R-001 | LCD-R-001 |
+
+## Worked digests for the digest-encoding members
+
+Each block recomputes one member's check-set root from nothing but `printf`,
+`openssl` and `sha256sum`. A member carries two checks, and each check is one
+leaf: the bytes `jcs-sha256` writes for it, RFC 8785 under the integer profile.
+The root is the flat construction, SHA-256 over the SHA-256 of each leaf in
+order, and the comment under each command is the `check-set.sha256` the member
+declares. In the leaf bytes, printable ASCII is itself and any other byte is
+written as a POSIX octal escape, so U+007F is `\177`, U+00E9 is `\303\251` and
+U+1F600 is `\360\237\230\200`: RFC 8785 writes them as UTF-8, never as `\u`
+escapes. The commands run in any POSIX shell; where `sha256sum` is missing, use
+`shasum -a 256`.
+
+**`v822c4bed9ba714d3`** (accept, `w3c-f-jcs-u007f`): the root over the leaf with U+007F written as the byte 0x7f, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"delete \177"},"check":"c-u007f","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# fe92923b2a1cdb0f712e0376f2e69c30511cedec57333cea3f5e06c15c9e5df2
+```
+
+**`v60bd06deca6e832d`** (reject, `w3c-f-jcs-u007f`): a root over the leaf with U+007F written as \u007f, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-u007f` switched off:
+
+```
+( printf '{"annotations":{"text":"delete \134u007f"},"check":"c-u007f","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ab3e727343286160d3125b031825a32b52fd40ce4bb425e003b1959718811d15
+```
+
+**`v2f563dc0b6fc9ec8`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+20AC, three bytes of UTF-8 written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\342\202\254"},"check":"c-u20ac","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ca0d6b586510a862453b102da4a47c25796f154c3a183a28d1a054b172beb3ea
+```
+
+**`v392e5b863085868b`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+2028, the line separator ECMAScript once refused raw written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\342\200\250"},"check":"c-u2028","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# d61c64ba947d0d6d3785158bbf68d5a5a4d1c97181e78887f2d23891d84ea172
+```
+
+**`v55772816f872150f`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+00E9, two bytes of UTF-8 written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\303\251"},"check":"c-u00e9","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 5512c1d32b57f1a892e8ba08c94210127f28eef76018cf44221fa6446624e88a
+```
+
+**`v606504b1125a3885`** (accept, `w3c-f-jcs-non-ascii`): the root over the leaf with U+1F600, a supplementary-plane character written as UTF-8, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"\360\237\230\200"},"check":"c-u1f600","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 3122f6fb9b6db83f31e1765df2460a4c31e9d34264adc15acac52c1506b4fe97
+```
+
+**`v3fd6a6a262a72f91`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+00E9, two bytes of UTF-8 written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134u00e9"},"check":"c-u00e9","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 41566def05bd68ea0f54108d4c72f4436c2f4de4d1c461f8bae5321016664107
+```
+
+**`v4193637206138b32`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+1F600, a supplementary-plane character written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134ud83d\134ude00"},"check":"c-u1f600","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 1905f671aa32b5080565a1bc08e160db730c4c5651d2818be22494de1caa6894
+```
+
+**`v5196f1761ea14b2b`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+20AC, three bytes of UTF-8 written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134u20ac"},"check":"c-u20ac","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# af862a9337409b0085f71e59e1bf6d6987107082ef29fa38917f1f591fa25743
+```
+
+**`v8474a83c45f293fc`** (reject, `w3c-f-jcs-non-ascii`): a root over the leaf with U+2028, the line separator ECMAScript once refused raw written as \uXXXX escapes, as the readers wrote it before RFC 8785.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `raw-non-ascii` switched off:
+
+```
+( printf '{"annotations":{"text":"\134u2028"},"check":"c-u2028","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 0414dddd295e811975c8aef2ef3611d82e97a260e1aa6847b78b00784dca24ff
+```
+
+**`vccb24c478c736bc5`** (accept, `w3c-f-jcs-member-order`): the root over the same names sorted by UTF-16 code unit, which puts U+1F600 first (its lead surrogate is 0xD83D).
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"\360\237\230\200":"U+1F600","\357\254\263":"U+FB33"},"check":"c-member-order","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 1d65402962c1f4e69b8528785d59ebfef5418804b6497c7f1d73c89141fe63fd
+```
+
+**`v9d05fc7c9c249317`** (reject, `w3c-f-jcs-member-order`): a root over member names U+FB33 and U+1F600 sorted by code point, which puts U+FB33 first.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `utf16-member-order` switched off:
+
+```
+( printf '{"annotations":{"\357\254\263":"U+FB33","\360\237\230\200":"U+1F600"},"check":"c-member-order","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 111ec757ffa63d4cc2406347ae29346caf6f35e224195b788c0929195403b4e1
+```
+
+**`v4e8fc1ab4f3fc5b3`** (accept, `w3c-f-jcs-number-value`): the root over the leaf with 1.0 and 1e2 written as 1 and 100, their values.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"hundred":100,"one":1},"check":"c-integral-tokens","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# b54538004454c320169716ff4478156f8d1f3b909cfd011f299a3f8357fee5b9
+```
+
+**`vf3fbd991d8e666a4`** (accept, `w3c-f-jcs-number-value`): the root over the leaf with -0 and -0.0 written as 0, their value, as RFC 8785 writes them.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"zero":0,"zero-fraction":0},"check":"c-negative-zero","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 38eaa15ae7fb4eb3cbd84e05737eb010cfff672d94059ae782a481869bd26796
+```
+
+**`v9ff65c5b03dd074c`** (reject, `w3c-f-jcs-number-value`): a root over the leaf with -0 and -0.0 written as their tokens.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `number-by-value` switched off:
+
+```
+( printf '{"annotations":{"zero":-0,"zero-fraction":-0.0},"check":"c-negative-zero","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ed7f15f63f99a08b8f8cb178a411fee9eb2af9dda5c83f045cbb0657c8bb2dcf
+```
+
+**`vc3fa59108d1ead8a`** (reject, `w3c-f-jcs-number-value`): a root over the leaf with 1.0 and 1e2 written as their tokens.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `number-by-value` switched off:
+
+```
+( printf '{"annotations":{"hundred":1e2,"one":1.0},"check":"c-integral-tokens","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 7d7fa2151131235f20831e52e863b12d783befd530e11c3b84f6992f56d7b7c5
+```
+
+**`v187e4435786b17f9`** (accept, `w3c-f-jcs-safe-range`): the neighbours outside the range carried as strings, which no reader parses as numbers.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"minus-two-to-the-53":"-9007199254740992","negative-zero":"-0","two-to-the-53":"9007199254740992","two-to-the-53-plus-one":"9007199254740993"},"check":"c-safe-range-as-strings","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 28ef9c84eb4d6865d3fd571e695ddd5b2f4d688a6f864e02d41a73ca58c3b35f
+```
+
+**`v5f92e1d7ef255730`** (accept, `w3c-f-jcs-safe-range`): both boundaries of the range, 2^53-1 and -(2^53-1), and the neighbours inside them.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"above-min":-9007199254740990,"below-max":9007199254740990,"max":9007199254740991,"min":-9007199254740991},"check":"c-safe-range-boundaries","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# bfcdf3672f8cd2e7e0bb2494a8a4008b1cd293212ae932b10f69ab14b6015d54
+```
+
+**`v0a887e6b24bdd940`** (reject, `w3c-f-jcs-safe-range`): -(2^53+1), whose nearest double is -2^53.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: -9007199254740993). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":-9007199254740992},"check":"c-minus-two-to-the-53-minus-one","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# d4e4df938d0247432b02f03e7060283d07fd93dd45a49330edd4278df4a22812
+```
+
+**`v16bbc5bfef80043e`** (reject, `w3c-f-jcs-safe-range`): 2^53+1, whose nearest double is 2^53: a reader without the bound writes the root of a different integer, the one written here.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 9007199254740993). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":9007199254740992},"check":"c-two-to-the-53-plus-one","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# b14d98d192a24a4d221d3c599d26c4156881d2602557bb8676ae1b4e70ac4f17
+```
+
+**`v522b0a6b91e74c95`** (reject, `w3c-f-jcs-safe-range`): -2^53, the neighbour just outside the range below.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: -9007199254740992). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":-9007199254740992},"check":"c-minus-two-to-the-53","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 4e95b7e7588e1cb58f3c42e457bd2319a3068a177097d0b1a536688ce8fa3aea
+```
+
+**`va8dfb25c6d62d458`** (reject, `w3c-f-jcs-safe-range`): 2^53, the neighbour just outside the range, with the root a reader without the bound writes over it.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 9007199254740992). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":9007199254740992},"check":"c-two-to-the-53","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# ce2e85b6b9ddaebb2915f8390e23d4c2ab8c133c24bb70925c69303406b45a08
+```
+
+**`v900fc651cea938e9`** (accept, `w3c-f-jcs-1e21`): 10^21 carried as a string in both spellings, so no digest has to choose one.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"digits":"1000000000000000000000","exponent":"1e+21"},"check":"c-1e21-as-strings","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 4b40f06cdab32dca09e356bf48097b24b8ab6d52c6c3c5f4f3f58e88bd80f163
+```
+
+**`v40ab7c6deec16438`** (reject, `w3c-f-jcs-1e21`): 10^21 as the exponent token 1e21, refused; a reader without the bound writes 1e+21, as RFC 8785 writes it.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 1e21). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":1e+21},"check":"c-1e21-as-exponent","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 662b1133786ad34ca24fa9a66c7ec2adffcceddbf36a99923d1811fde972d7c7
+```
+
+**`vb37f841c9e91bf18`** (reject, `w3c-f-jcs-1e21`): 10^21 in digits, the spelling the readers wrote before RFC 8785, refused; a reader without the bound writes 1e+21 for it, the root written here.
+
+A conforming reader rejects it: W3C-R-020 (integer-outside-safe-range: 1000000000000000000000). The root it declares is the one a reader writes with `safe-range` switched off:
+
+```
+( printf '{"annotations":{"count":1e+21},"check":"c-1e21-in-digits","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 948f9c609fb120621bfba31a4589c6d0332c0728a10fc5a2979810ac599f79b6
+```
+
+**`v91f45fe53b9cb4f7`** (accept, `w3c-f-jcs-non-integer`): non-integral numbers carried as strings.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"half":"0.5","nines":"0.99999999999999999","small":"1e-7"},"check":"c-fractions-as-strings","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 86aa0c036510812f8460f10d0ac0363827c3cca313e79d41db9f99b837996395
+```
+
+**`v1afe0d60b2df5d39`** (reject, `w3c-f-jcs-non-integer`): 0.99999999999999999, whose nearest double is 1: refused on its exact value, which a reader that judges the double instead would admit and write as 1.
+
+A conforming reader rejects it: W3C-R-020 (non-integer-number: 0.99999999999999999). The root it declares is the one a reader writes with `integers-only` switched off:
+
+```
+( printf '{"annotations":{"ratio":1},"check":"c-seventeen-nines","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 023a50bdc5ebe43bad9e31769fec689f5419cceedf39c7ae0635a97bab44f474
+```
+
+**`v26a379aeeebabd1e`** (reject, `w3c-f-jcs-non-integer`): 0.5, a non-integral number in a check leaf.
+
+A conforming reader rejects it: W3C-R-020 (non-integer-number: 0.5). The root it declares is the one a reader writes with `integers-only` switched off:
+
+```
+( printf '{"annotations":{"ratio":0.5},"check":"c-one-half","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# c4378bce9ce7194998cde17674ba03f1c923d735f49c238f90badbdbf616ca30
+```
+
+**`v2b4990ad53fbf28b`** (reject, `w3c-f-jcs-non-integer`): 1e-7, which RFC 8785 writes in exponent form.
+
+A conforming reader rejects it: W3C-R-020 (non-integer-number: 1e-7). The root it declares is the one a reader writes with `integers-only` switched off:
+
+```
+( printf '{"annotations":{"ratio":1e-7},"check":"c-1e-7","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 9cbd43e7fd1cf63941f3065e4bc3f13d2ac948c772614ea82e0d69d1285698be
+```
+
+**`vfacf2b3dafdb5c0a`** (accept, `w3c-f-jcs-declaration`): a binding that declares jcs-sha256, the one member of the closed set.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"text":"plain"},"check":"c-declared","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 6e497f370b7c37ef0bc9455cb001052fe02dcc87d65b2a31cd6d4d3e4bc3d0e5
+```
+
+**`v64e02942221729d2`** (reject, `w3c-f-jcs-declaration`): a binding that declares the encoding the readers used before RFC 8785, outside the closed set: refused by name, never read as the reader's own.
+
+A conforming reader rejects it: W3C-R-015 (unsupported-digest-encoding). The root it declares is the one a reader writes with `closed-encoding-set` switched off:
+
+```
+( printf '{"annotations":{"text":"plain"},"check":"c-declared","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 6e497f370b7c37ef0bc9455cb001052fe02dcc87d65b2a31cd6d4d3e4bc3d0e5
+```
