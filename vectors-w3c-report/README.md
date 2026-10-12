@@ -161,6 +161,17 @@ reject member it prints the root a reader writes with the member's rule
 weakened, which is the root the member declares and a conforming reader
 refuses.
 
+The member file carries the same information itself, under `canonical`, so a
+reader that fails a member learns from the member alone what it should have
+produced. `canonical.conforming` holds what a conforming reader writes: each
+leaf's bytes in hex with their SHA-256, the flat root over them, and the
+command that prints that root; where a conforming reader refuses the report
+instead, it holds the refusal. A reject member also carries
+`canonical.declared`: the bytes a reader writes with the rule named in
+`rule-switched-off` weakened, whose root is the one the member declares. The
+block is not among the fields the identifier covers, so it names no member
+differently.
+
 ## Check the corpus digest from outside this repository
 
 `corpusDigest` is SHA-256 over the bytes of the member files, concatenated in

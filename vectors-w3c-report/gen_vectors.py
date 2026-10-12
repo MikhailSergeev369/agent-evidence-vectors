@@ -2301,6 +2301,8 @@ def read_back(vid: str, member: dict[str, Any], payload: bytes) -> None:
     cause = member["expected"].get("cause")
     if cause is not None and w3creport.check_set_cause(parsed["subject"]) != cause:
         raise SystemExit(f"FAIL: {vid} read back does not name the cause {cause}")
+    if parsed.get("canonical") != canonical_block(parsed):
+        raise SystemExit(f"FAIL: {vid} read back carries canonical bytes its subject does not give")
 
 
 def printf_bytes(data: bytes) -> str:
@@ -2320,6 +2322,58 @@ def printf_bytes(data: bytes) -> str:
     return "".join(out)
 
 
+def root_command(leaves: list[bytes]) -> str:
+    """The shell command that prints the flat root over ``leaves``: printf, openssl, sha256sum."""
+    steps = " ".join(
+        f"printf '{printf_bytes(leaf)}' | openssl dgst -sha256 -binary;" for leaf in leaves
+    )
+    return f"( {steps} ) | sha256sum"
+
+
+def leaf_block(leaves: list[bytes]) -> dict[str, Any]:
+    """Leaf bytes in hex with their SHA-256, the flat root over them, and its command."""
+    return {
+        "leaves": [{"hex": leaf.hex(), "sha256": w3creport.sha(leaf)} for leaf in leaves],
+        "root": w3creport.flat_root(leaves),
+        "command": root_command(leaves),
+    }
+
+
+def canonical_block(member: dict[str, Any]) -> dict[str, Any] | None:
+    """What a digest-encoding member's check-set root is made of, carried in the member.
+
+    ``conforming`` is what a conforming reader produces: the jcs-sha256 bytes of
+    each check, the flat root over them and the command that prints it, or the
+    refusal a conforming reader names instead of a root. A reject member also
+    carries ``declared``: the bytes a reader writes with the family's rule
+    switched off, whose root is the one the member declares. So a reader that
+    fails the member learns from the member itself what it should have produced.
+    Members outside the digest-encoding families carry no block.
+    """
+    family = member["family"]
+    if family not in FAMILY_RULES:
+        return None
+    report_ = member["subject"]
+    if report_["check-set"]["tree-shape"] != "flat":
+        raise ValueError(f"{family}: the canonical block is written for the flat shape only")
+    checks = report_["checks"]
+    block: dict[str, Any] = {"encoding": w3creport.JCS_SHA256, "tree-shape": "flat"}
+    cause = w3creport.check_set_cause(report_)
+    if cause is None or cause == w3creport.DIGESTS_DIFFER:
+        block["conforming"] = leaf_block([w3creport.jcs_sha256(c) for c in checks])
+    else:
+        block["conforming"] = {"refused": w3creport.check_set_refusal(report_)}
+    if member["kind"] == "reject":
+        rule = FAMILY_RULES[family]
+        declared = leaf_block([w3creport.jcs_sha256(c, frozenset([rule])) for c in checks])
+        if declared["root"] != report_["check-set"]["sha256"]:
+            raise ValueError(f"{family}: the rule-off bytes do not give the declared root")
+        block["declared"] = dict(declared, **{"rule-switched-off": rule})
+    elif block["conforming"].get("root") != report_["check-set"]["sha256"]:
+        raise ValueError(f"{family}: an accept member's root does not recompute")
+    return block
+
+
 def worked_example(member: dict[str, Any]) -> str:
     """One member's check-set digest, recomputable with printf and openssl alone.
 
@@ -2327,34 +2381,25 @@ def worked_example(member: dict[str, Any]) -> str:
     SHA-256 over their two SHA-256 digests in order. A reject member's root is
     the one a reader writes with its family's rule weakened, so its leaf bytes
     are shown as that reader writes them, beside the refusal or the mismatch a
-    conforming reader reports.
+    conforming reader reports. The command is the one the member file carries.
     """
     vid = w3creport.identify(member)
     rule = FAMILY_RULES[member["family"]]
     report_ = member["subject"]
-    checks = report_["checks"]
     binding = report_["check-set"]
-    weaken = frozenset([rule]) if member["kind"] == "reject" else frozenset()
+    block = canonical_block(member)
+    if block is None:
+        raise ValueError(f"{vid}: a digest-encoding member carries no canonical block")
     lines = [f"**`{vid}`** ({member['kind']}, `{member['family']}`): {member['cites']}.", ""]
     if member["kind"] == "reject":
         finding = w3creport.check_set_refusal(report_)
         lines.append(f"A conforming reader rejects it: {finding}. The root it declares is "
                      f"the one a reader writes with `{rule}` switched off:")
+        command = block["declared"]["command"]
     else:
         lines.append("The root it declares, which a conforming reader recomputes:")
-    try:
-        leaves = [w3creport.jcs_sha256(c, weaken) for c in checks]
-    except w3creport.DigestRefused:
-        leaves = []
-    if not leaves:
-        if member["kind"] != "reject":
-            raise ValueError(f"{vid}: an accept member's checks have no jcs-sha256 bytes")
-        lines += ["", f"(no leaf bytes: `{member['expected']['cause']}`)"]
-        return "\n".join(lines)
-    steps = " ".join(
-        f"printf '{printf_bytes(leaf)}' | openssl dgst -sha256 -binary;" for leaf in leaves
-    )
-    lines += ["", "```", f"( {steps} ) | sha256sum", f"# {binding['sha256']}", "```"]
+        command = block["conforming"]["command"]
+    lines += ["", "```", command, f"# {binding['sha256']}", "```"]
     return "\n".join(lines)
 
 
@@ -2392,6 +2437,9 @@ def member_document(vid: str, member: dict[str, Any]) -> dict[str, Any]:
         document["resolves"] = member["resolves"]
     if "origin" in member:
         document["origin"] = member["origin"]
+    block = canonical_block(member)
+    if block is not None:
+        document["canonical"] = block
     return document
 
 

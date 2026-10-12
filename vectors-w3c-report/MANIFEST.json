@@ -1053,7 +1053,7 @@
     "accept": 130,
     "reject": 137
   },
-  "corpusDigest": "e537b09f3267783be52b403939dc5c44b43a33fb0599d2f0f4369226e4729654",
+  "corpusDigest": "be4bdc9480fc2a1b3fbace58ac4e1dceae4d91d1ff70f799b72fcc33384fcaf3",
   "note": "A member is a whole subject: a v0.1 report, a Run object, or a discovery snapshot. Each reject member is rejected under exactly one requirement and has an accepting twin in its family, so a validator that refuses every subject scores zero rather than full marks.",
   "vectors": [
     {
