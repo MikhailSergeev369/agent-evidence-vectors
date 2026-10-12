@@ -7,10 +7,10 @@ together fix what v0.1 of the reporting format freezes, 2 messages that
 propose the digest encoding after it froze, and the two Internet-Drafts the
 format's editor holds.
 
-This corpus is 267 vectors, of which 130 a conformant verifier must not fail closed
-on and 137 it must reject.
+This corpus is 269 vectors, of which 131 a conformant verifier must not fail closed
+on and 138 it must reject.
 
-**Three subject types, one manifest.** 200 members are whole
+**Three subject types, one manifest.** 202 members are whole
 v0.1 reports, judged by the rows of the format; 45
 are Run objects of the agent-run-metrics draft; 22
 are discovery snapshots of the context-discovery draft. Each member names its
@@ -20,12 +20,12 @@ subject type and the reader selects the validator by it.
 the report members whose requirements are all agreed, 83 to
 reject and 82 to accept. A report member that cites a
 proposed requirement rests on a rule the v0.1 text does not hold, so it is
-counted apart, as excluded-under-proposed-rule, 35 members:
+counted apart, as excluded-under-proposed-rule, 37 members:
 
 | proposed requirement cited | reject | accept |
 |---|---|---|
 | W3C-R-022 | 2 | 2 |
-| W3C-R-030 | 8 | 8 |
+| W3C-R-030 | 9 | 9 |
 | W3C-R-031 | 9 | 4 |
 | W3C-R-032 | 1 | 1 |
 
@@ -324,6 +324,7 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v77f27a301818a512` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v79266aba771310af` | reject | llm-context-discovery | lcd-f-consumer | LCD-R-011 | LCD-R-011 |
 | `v796a6048345b8f58` | accept | report | w3c-f-29 | W3C-R-029 | none |
+| `v79bebd0793e2fa7b` | accept | report | w3c-f-jcs-number-value | W3C-R-020, W3C-R-030 | none |
 | `v7aca350e00458527` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v7bc7c1460093e973` | reject | llm-context-discovery | lcd-f-publisher | LCD-R-003 | LCD-R-003 |
 | `v7c22f1451e51aeb5` | reject | report | w3c-f-15 | W3C-R-015 | W3C-R-015 |
@@ -351,6 +352,7 @@ whether the v0.1 text adopts the row (agreed) or only this corpus carries it
 | `v8d4e61737e9ee6a6` | reject | agent-run-metrics | arm-f-serialization | ARM-R-019 | ARM-R-019 |
 | `v900fc651cea938e9` | accept | report | w3c-f-jcs-1e21 | W3C-R-020, W3C-R-031 | none |
 | `v91f45fe53b9cb4f7` | accept | report | w3c-f-jcs-non-integer | W3C-R-020, W3C-R-031 | none |
+| `v920852737e02ae49` | reject | report | w3c-f-jcs-number-value | W3C-R-020, W3C-R-030 | W3C-R-020 |
 | `v96087777a4afe26f` | reject | report | w3c-f-disensor | W3C-R-016 | W3C-R-016 |
 | `v9815e1f08a7e0664` | reject | agent-run-metrics | arm-f-run | ARM-R-003 | ARM-R-003 |
 | `v98252c989e84999d` | reject | report | w3c-f-3 | W3C-R-003 | W3C-R-003 |
@@ -614,6 +616,15 @@ The root it declares, which a conforming reader recomputes:
 # b54538004454c320169716ff4478156f8d1f3b909cfd011f299a3f8357fee5b9
 ```
 
+**`v79bebd0793e2fa7b`** (accept, `w3c-f-jcs-number-value`): the root over the leaf with the integer token -0 alone written as 0, its value, as RFC 8785 writes it.
+
+The root it declares, which a conforming reader recomputes:
+
+```
+( printf '{"annotations":{"zero":0},"check":"c-negative-zero-integer","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# fe4364855784f38ad1b261d47195bf8c591820c4219396410f47b7d474bbed1d
+```
+
 **`vf3fbd991d8e666a4`** (accept, `w3c-f-jcs-number-value`): the root over the leaf with -0 and -0.0 written as 0, their value, as RFC 8785 writes them.
 
 The root it declares, which a conforming reader recomputes:
@@ -621,6 +632,15 @@ The root it declares, which a conforming reader recomputes:
 ```
 ( printf '{"annotations":{"zero":0,"zero-fraction":0},"check":"c-negative-zero","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
 # 38eaa15ae7fb4eb3cbd84e05737eb010cfff672d94059ae782a481869bd26796
+```
+
+**`v920852737e02ae49`** (reject, `w3c-f-jcs-number-value`): a root over the leaf with the integer token -0 alone written as its token, as a reader that keeps the literal writes it.
+
+A conforming reader rejects it: W3C-R-020 (digests-differ). The root it declares is the one a reader writes with `number-by-value` switched off:
+
+```
+( printf '{"annotations":{"zero":-0},"check":"c-negative-zero-integer","state":"pass"}' | openssl dgst -sha256 -binary; printf '{"check":"c-pass-2","state":"pass"}' | openssl dgst -sha256 -binary; ) | sha256sum
+# 650fedb105e5acd49dbc88d6d499c7fb1e62457cfc3812fae66bbb0670f61d60
 ```
 
 **`v9ff65c5b03dd074c`** (reject, `w3c-f-jcs-number-value`): a root over the leaf with -0 and -0.0 written as their tokens.

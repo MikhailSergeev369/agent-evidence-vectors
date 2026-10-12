@@ -1836,6 +1836,13 @@ def build_digest_encoding(m: Members) -> None:
         "writes them",
     )
     encoding_pair(
+        m, "w3c-f-jcs-number-value", "c-negative-zero-integer", {"zero": INT("-0")},
+        "a root over the leaf with the integer token -0 alone written as its token, as a "
+        "reader that keeps the literal writes it",
+        "the root over the leaf with the integer token -0 alone written as 0, its value, as "
+        "RFC 8785 writes it",
+    )
+    encoding_pair(
         m, "w3c-f-jcs-number-value", "c-integral-tokens",
         {"one": NUM("1.0"), "hundred": NUM("1e2")},
         "a root over the leaf with 1.0 and 1e2 written as their tokens",

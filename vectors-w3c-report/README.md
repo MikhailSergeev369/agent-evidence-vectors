@@ -120,14 +120,14 @@ changed.
 
 ## The digest-encoding members
 
-Eight families carry the encoding: 13 accept members and 18 reject members.
+Eight families carry the encoding: 14 accept members and 19 reject members.
 
 | family | case | accept | reject |
 |---|---|---|---|
 | `w3c-f-jcs-u007f` | U+007F written as itself | 1 | 1 |
 | `w3c-f-jcs-non-ascii` | U+00E9, U+20AC, U+2028 and U+1F600 as UTF-8 | 4 | 4 |
 | `w3c-f-jcs-member-order` | a supplementary-plane name before a BMP name above U+D800 | 1 | 1 |
-| `w3c-f-jcs-number-value` | `-0`, `-0.0`, `1.0` and `1e2` written by value | 2 | 2 |
+| `w3c-f-jcs-number-value` | `-0` and `-0.0` together, the integer `-0` alone, and `1.0` and `1e2`, written by value | 3 | 3 |
 | `w3c-f-jcs-safe-range` | both boundaries, the neighbours on either side, and numeric strings | 2 | 4 |
 | `w3c-f-jcs-1e21` | 10^21 as `1e21` and as digits, and as strings | 1 | 2 |
 | `w3c-f-jcs-non-integer` | `0.5`, `1e-7`, `0.99999999999999999`, and numeric strings | 1 | 3 |
