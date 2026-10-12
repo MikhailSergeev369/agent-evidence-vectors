@@ -2337,7 +2337,6 @@ def worked_example(member: dict[str, Any]) -> str:
     weaken = frozenset([rule]) if member["kind"] == "reject" else frozenset()
     lines = [f"**`{vid}`** ({member['kind']}, `{member['family']}`): {member['cites']}.", ""]
     if member["kind"] == "reject":
-        cause = member["expected"]["cause"]
         finding = w3creport.check_set_refusal(report_)
         lines.append(f"A conforming reader rejects it: {finding}. The root it declares is "
                      f"the one a reader writes with `{rule}` switched off:")
@@ -2347,14 +2346,15 @@ def worked_example(member: dict[str, Any]) -> str:
         leaves = [w3creport.jcs_sha256(c, weaken) for c in checks]
     except w3creport.DigestRefused:
         leaves = []
-    if leaves:
-        steps = " ".join(
-            f"printf '{printf_bytes(leaf)}' | openssl dgst -sha256 -binary;" for leaf in leaves
-        )
-        lines += ["", "```", f"( {steps} ) | sha256sum", f"# {binding['sha256']}", "```"]
-    else:
-        lines.append("")
-        lines.append(f"(no leaf bytes: `{cause}`)")
+    if not leaves:
+        if member["kind"] != "reject":
+            raise ValueError(f"{vid}: an accept member's checks have no jcs-sha256 bytes")
+        lines += ["", f"(no leaf bytes: `{member['expected']['cause']}`)"]
+        return "\n".join(lines)
+    steps = " ".join(
+        f"printf '{printf_bytes(leaf)}' | openssl dgst -sha256 -binary;" for leaf in leaves
+    )
+    lines += ["", "```", f"( {steps} ) | sha256sum", f"# {binding['sha256']}", "```"]
     return "\n".join(lines)
 
 
