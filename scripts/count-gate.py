@@ -1004,6 +1004,33 @@ def declared_claims(src: Sources) -> tuple[Claim, ...]:
 
 
 DELEGATED: tuple[Delegated, ...] = (
+    # The AAE v1.4.0 binding package. Its integers are vector identifiers
+    # (aae-enforce-vector-25 and its file prefixes), the size of the pinned
+    # upstream set, the run's printed tallies, and the draft's resource bounds.
+    # The package tests pin every input by digest, assert the 26-file set and
+    # the printed line, and exercise both sides of each bound.
+    *(Delegated("interop/aae-verdict-binding-v1/" + name,
+                "AAE v1.4.0 vector ids, set size, tallies and bounds", pattern,
+                "interop/aae-verdict-binding-v1/test_aae_binding.py")
+      for name, pattern in (
+          ("README.md", r"\d+/\d+ vectors reproduced, \d+/\d+ cases"),
+          ("README.md", r"All \d+ enforce vectors"),
+          ("README.md", r"\(vector \d+\)"),
+          ("OUTPUT-CONTRACT.md", r"\d+/\d+ vectors reproduced, \d+/\d+ cases"),
+          ("OUTPUT-CONTRACT.md", r"all \d+ vectors reproduced"),
+          ("OUTPUT-CONTRACT.md", r"vectors \d+ and \d+"),
+          ("PROFILE.md", r"depth at most \d+"),
+          ("check_report.py", r"all \d+ vectors reproduced"),
+          ("gen_cases.py", r'vector\("\d+"\)'),
+          ("gen_cases.py", r"Vector \d+:"),
+          ("kernel.py", r"at most \d+, non-empty strings"),
+          ("pins.py", r"The \d+ enforce vectors"),
+          ("pins.py", r"aae-enforce-vector-\d+"),
+          ("reproduce.py", r"aae-enforce-vector-\d+"),
+          ("test_aae_binding.py",
+           r'\("\d+", "prior_verdict_permit"\), \("\d+", "prev_core_digest_mismatch"\)'),
+          ("test_aae_binding.py", r"\d+/\d+ vectors reproduced, \d+/\d+ cases"),
+      )),
     # The AgentID action_ref v2 recompute prints its own tallies; the reader
     # exits nonzero unless every upstream check and domain case holds, and
     # test_reader.py asserts the two totals.
