@@ -252,13 +252,18 @@ class Source:
 
 
 # These fields have no value in a local push mirror. Unknown contexts are faults.
+# `github.actor` is the account that pushed; the mirror has none, and the one
+# branch that reads it (the Dependabot exemption in commit-message-lint) can
+# never match an empty actor, so the local run lints every commit.
 LOCAL_ABSENT = dict.fromkeys(
     (
+        "github.actor",
         "github.event.before",
         "github.event.pull_request.base.sha",
         "github.event.pull_request.head.sha",
         "github.event.pull_request.title",
         "github.event.pull_request.number",
+        "github.event.pull_request.user.login",
         "github.token",
         "github.run_id",
     ),

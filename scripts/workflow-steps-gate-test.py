@@ -35,6 +35,7 @@ import importlib.util
 import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -1777,6 +1778,28 @@ def bounded_expression_literals_and_comparisons_match_actions() -> None:
         assert problem and value == "", (expression, value, problem)
 
 
+def every_pull_request_field_a_workflow_reads_is_absent_on_a_push() -> None:
+    """A push carries no pull_request and the mirror has no actor: both read as empty.
+
+    The runner evaluates `github.event.pull_request.<field>` to an empty string
+    on a push. The mirror knows that only for the fields LOCAL_ABSENT lists, and
+    any other one is an unknown context, which faults the step. PR_AUTHOR read
+    `github.event.pull_request.user.login` from 2026-10-13, nothing listed it,
+    and every local gate since then failed a step the remote ran.
+    """
+    used: set[str] = set()
+    for workflow in sorted((HERE.parent / ".github/workflows").glob("*.yml")):
+        used.update(
+            re.findall(
+                r"github\.event\.pull_request\.[A-Za-z0-9_.]+|github\.actor\b",
+                workflow.read_text(),
+            )
+        )
+    assert used, "no workflow reads a pull_request field, so this case reads nothing"
+    missing = sorted(used - set(GATE.LOCAL_ABSENT))  # type: ignore[attr-defined]
+    assert not missing, f"push contexts with no local value: {missing}"
+
+
 def a_step_partial_clone_can_fetch_its_blobs() -> None:
     """A step's own partial clone checks out, as it does on the runner.
 
@@ -2086,6 +2109,11 @@ def main() -> int:
     check(
         "bounded expression literals follow Actions",
         bounded_expression_literals_and_comparisons_match_actions,
+    )
+
+    check(
+        "every pull_request field a workflow reads is absent on a push",
+        every_pull_request_field_a_workflow_reads_is_absent_on_a_push,
     )
 
     check(
