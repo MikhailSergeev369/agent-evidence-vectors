@@ -1078,13 +1078,12 @@ class JobState:
             "UV_PYTHON": str(self.root / ".venv/bin/python"),
             "UV_LINK_MODE": "copy",
             "PYTHONDONTWRITEBYTECODE": "1",
-            "GIT_NO_LAZY_FETCH": "1",
             "GIT_NO_REPLACE_OBJECTS": "1",
         }
         if self.path:
             env["PATH"] = os.pathsep.join([*reversed(self.path), env.get("PATH", "")])
         env["PATH"] = os.pathsep.join([str(self.root / ".venv/bin"), env.get("PATH", "")])
-        return git_environment(base=env)
+        return step_git_environment(env)
 
     def provision_baseline(self, evidence: pathlib.Path) -> None:
         """Isolate the actual local interpreter, including fallback pip installs."""
@@ -1383,6 +1382,23 @@ def plan(files: list[pathlib.Path]) -> int:
                 not_run.append(f"{step.label}  ({local.reason})")
                 print(f"  NOT RUN  {step.label}  ({local.reason})")
     return summarise("planned", planned, 0, not_run)
+
+
+def step_git_environment(env: Mapping[str, str]) -> dict[str, str]:
+    """Git bindings for a step, which leave lazy fetching as the runner has it.
+
+    `git_environment` sets GIT_NO_LAZY_FETCH because the gate's own reads must
+    never pull a missing object over the network. Steps inherited that binding,
+    and a step's third-party partial clones then could not check out: pip clones
+    a `git+https` requirement with `--filter=blob:none`, git refused to fetch the
+    blobs, and the agmi workflow failed here on 2026-10-16 while passing on the
+    remote. It passed locally before only where a cached wheel skipped the clone.
+    A runner sets no such variable. The job checkout cannot depend on it either:
+    `Source.checkout` makes a full dissociated clone and refuses alternates.
+    """
+    bound = git_environment(base=env)
+    bound.pop("GIT_NO_LAZY_FETCH", None)
+    return bound
 
 
 def step_base_environment(ambient: Mapping[str, str]) -> dict[str, str]:
