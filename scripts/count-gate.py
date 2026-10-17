@@ -1327,6 +1327,16 @@ DELEGATED: tuple[Delegated, ...] = (
 
 
 FROZEN: tuple[Frozen, ...] = (
+    # ---- the output of a published, immutable release, shown as it prints.
+    Frozen(
+        'README.md',
+        "the last line the pinned v0.19.0 package prints for its default corpus",
+        'totals: 288 vectors, 288 pass, 0 fail',
+        'The output of `uvx agent-evidence-vectors==0.19.0`, the release the README pins, for '
+        'the suiteRevision 32 corpus that wheel ships. A published wheel does not change, so '
+        'the line must match that wheel and not the corpus on main; the release that moves the '
+        'pin re-records it.',
+    ),
     # ---- an outside implementer's reported results, recorded as posted.
     Frozen(
         'RUNS.md',
