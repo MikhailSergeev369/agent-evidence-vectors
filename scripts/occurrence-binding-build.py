@@ -172,7 +172,7 @@ def _set(
 
 
 def _expect(*words: str) -> dict[str, str]:
-    out = dict(zip(AXES, words, strict=True))
+    out: dict[str, str] = {axis: word for axis, word in zip(AXES, words, strict=True)}
     out.update({"settlement_finality": N, "work_acceptance": N, "observed_effect": N})
     return out
 
