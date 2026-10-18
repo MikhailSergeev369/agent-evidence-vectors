@@ -4,7 +4,7 @@ Build a verifier, then pass its command to the harness. After the signed release
 
 ```yaml
 - run: GOWORK=off go build -o aee-verify ./cmd/aee-verify
-- uses: probityai/agent-evidence-vectors@v0.19.0
+- uses: probityai/agent-evidence-vectors@v0.20.0
   with:
     verifier: ./aee-verify -validity-only --json
 ```
@@ -12,7 +12,7 @@ Build a verifier, then pass its command to the harness. After the signed release
 For a shell run before publication, use the [source-wheel recipe](../../README.md#try-it) from a reviewed checkout. After the tag and PyPI wheel are published, install the matching release:
 
 ```sh
-go install github.com/probityai/agent-evidence-vectors/cmd/aee-verify@v0.19.0
+go install github.com/probityai/agent-evidence-vectors/cmd/aee-verify@v0.20.0
 uvx agent-evidence-vectors==0.20.0 --verifier "aee-verify --json"
 ```
 
