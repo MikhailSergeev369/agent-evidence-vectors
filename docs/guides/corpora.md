@@ -72,6 +72,7 @@ These have their own inputs and policies.
 | [JEP Core 0.7 reader](../../interop/jep-core07-reader/README.md) | Runs the pinned JEP fixtures without importing JEP's validator, adapter or runner, under a protocol committed before execution. Reports the validation, producer and acceptance assertions separately. |
 | [REMORA E7 reader](../../packaging/agent_evidence_vectors/remora_e7/README.md) | Checks the native `runtime-surface-e7-v0.1` fixtures against the producer-pinned package digest and computes each result without reading the case's expected answer. |
 | [Invocation three-axis reader](../../packaging/agent_evidence_vectors/invocation_axes/README.md) | Pins one MCP `tools/call` and judges a decision capture package and an execution bundle bound to it on three separate axes: package integrity, request and decision correspondence, and observed effect. Capture authenticity, coverage and kernel-to-tool attribution stay not established. |
+| [Occurrence-binding reader](../../packaging/agent_evidence_vectors/occurrence_binding/README.md) | Freezes one paid request occurrence and judges the issuer budget statement, payment receipt and execution receipt each natively under frozen trust inputs, then the spend and occurrence links separately. Two controls: a mismatched occurrence and the same call content from a different execution. |
 
 ## Specification pins
 
