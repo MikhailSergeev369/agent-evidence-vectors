@@ -125,8 +125,11 @@ def _audit(step: dict[str, Any], posture: str, source: str,
 def _attrs(items: Any) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for item in items or []:
-        if isinstance(item, dict) and isinstance(item.get("value"), dict):
-            out[item.get("key")] = next(iter(item["value"].values()), None)
+        if not isinstance(item, dict):
+            continue
+        key, value = item.get("key"), item.get("value")
+        if isinstance(key, str) and isinstance(value, dict):
+            out[key] = next(iter(value.values()), None)
     return out
 
 
