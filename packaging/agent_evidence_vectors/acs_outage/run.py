@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import platform
+import re
 import shlex
 import subprocess
 import sys
@@ -63,6 +64,9 @@ def load_manifest(root: Path) -> dict[str, Any]:
         raise CorpusError("empty or duplicate case identifiers")
     if {p.name for p in (root / "cases").iterdir() if p.is_dir()} != set(ids):
         raise CorpusError("case directories do not match the manifest")
+    for name, digest in manifest["sources"].items():
+        if sha256_hex((root / "source" / name).read_bytes()) != digest:
+            raise CorpusError(f"source {name} digest mismatch")
     by_id = {c["id"]: c for c in cases}
     for case in cases:
         _check_case(root, case, by_id)
@@ -115,13 +119,17 @@ def run_corpus(root: Path, verifier: list[str] | None = None,
     }
 
 
-def _revision() -> str:
+def _revision(explicit: str | None) -> str:
+    if explicit is not None:
+        return explicit
     from importlib.metadata import PackageNotFoundError, version
 
     try:
         return f"{DISTRIBUTION}=={version(DISTRIBUTION)}"
     except PackageNotFoundError:
-        return "checkout"
+        raise SystemExit(
+            "pass --implementation-revision <40-character commit> when running from a checkout"
+        ) from None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -132,7 +140,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--corpus", type=Path, default=PACKAGED_CORPUS)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--verifier", help="command line of the verifier under test")
+    parser.add_argument("--implementation-revision", default=None)
     args = parser.parse_args(argv)
+    if args.implementation_revision is not None and not re.fullmatch(
+        r"[0-9a-f]{40}", args.implementation_revision
+    ):
+        parser.error("implementation revision must be a 40-character Git commit")
     if args.case is not None:
         answer = verify(args.case)
         print(json.dumps(answer, sort_keys=True) if args.json
@@ -146,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
     except (CorpusError, OSError, ValueError, KeyError) as exc:
         print(f"invalid corpus: {exc}", file=sys.stderr)
         return 2
-    report["implementation_revision"] = _revision()
+    report["implementation_revision"] = _revision(args.implementation_revision)
     report["environment"] = f"Python {platform.python_version()} on {platform.platform()}"
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n",
