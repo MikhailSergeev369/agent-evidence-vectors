@@ -122,11 +122,11 @@ def seal(predicate: dict[str, Any], fields: list[str]) -> dict[str, Any]:
 
 
 def verdict(scope: str = "SELF", peer_artifact: str | None = None,
-            hosting: str = OPERATOR) -> dict[str, Any]:
+            hosting: str = OPERATOR, outcome: str = "rejected") -> dict[str, Any]:
     d = vdigest(VECTOR)
     p: dict[str, Any] = {
         "vector_id": d[:16], "profile": "acs-core", "anchor": ANCHOR,
-        "clause": "10.3 Replay protection (ACS-Core)", "verdict": "rejected",
+        "clause": "10.3 Replay protection (ACS-Core)", "verdict": outcome,
         "witness_derivation": {"runner": {"id": "acs-runner@0.1.0-demo",
                                           "hosting_operator_id": hosting},
                                "deployment_operator_id": OPERATOR},
@@ -144,7 +144,7 @@ def verdict(scope: str = "SELF", peer_artifact: str | None = None,
 def peer_statement(kind: str = "wire_transcript", vector: dict[str, Any] = VECTOR,
                    requirement: str = ANCHOR, observed: dict[str, Any] = OBSERVED,
                    transcript_bytes: bytes | None = None,
-                   deployment: str = OPERATOR) -> dict[str, Any]:
+                   deployment: str = OPERATOR, outcome: str = "rejected") -> dict[str, Any]:
     artifact: dict[str, Any]
     if kind == "client_run":
         artifact = {"kind": "client_run", "deployment": deployment}
@@ -156,7 +156,8 @@ def peer_statement(kind: str = "wire_transcript", vector: dict[str, Any] = VECTO
         artifact = {"kind": kind}
     return {"_type": STATEMENT_V1, "subject": subject(vector), "predicateType": PEER_PREDICATE,
             "predicate": {"requirement": requirement, "evidence_artifact": artifact,
-                          "observed": observed, "checked_at": "2026-10-18T01:00:00Z"}}
+                          "observed": observed, "verdict": outcome,
+                          "checked_at": "2026-10-18T01:00:00Z"}}
 
 
 def statement(predicate: dict[str, Any], vector: dict[str, Any] = VECTOR) -> dict[str, Any]:
@@ -231,11 +232,12 @@ def self_case(predicate: dict[str, Any] | None = None, signers: tuple[str, ...] 
 
 def peer_case(signer: str = "peer", scope: str = "PEER", supply_peer: bool = True,
               supply_transcript: bool = True, transcript_bytes: bytes | None = None,
-              named_digest: str | None = None, **peer_kw: Any) -> Case:
+              named_digest: str | None = None, record_outcome: str = "rejected",
+              **peer_kw: Any) -> Case:
     ps = peer_statement(**peer_kw)
     case = Case()
-    case.record = envelope(statement(verdict(scope, named_digest or sha256_hex(canonical(ps)))),
-                           ["runner"])
+    named = named_digest or sha256_hex(canonical(ps))
+    case.record = envelope(statement(verdict(scope, named, outcome=record_outcome)), ["runner"])
     case.peer = envelope(ps, [signer]) if supply_peer else None
     if supply_transcript and ps["predicate"]["evidence_artifact"]["kind"] == "wire_transcript":
         case.transcript = transcript_bytes if transcript_bytes is not None else transcript()
@@ -334,6 +336,8 @@ CASES: list[tuple[str, str, Callable[[], Case], str, str, str | None]] = [
     ("reject-peer-disagrees", "peer",
      lambda: peer_case(observed={"decision": "allow", "reason_codes": []}), C,
      "peer_disagrees", WIRE_TWIN),
+    ("reject-peer-reused-for-other-verdict", "peer",
+     lambda: peer_case(record_outcome="pass"), C, "peer_disagrees", WIRE_TWIN),
     ("reject-scope-peer-without-artifact", "scope",
      lambda: self_case(_with(_set("witness_scope", "PEER"))), C, "witness_scope_misderived",
      SELF_TWIN),

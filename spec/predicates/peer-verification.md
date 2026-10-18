@@ -44,6 +44,7 @@ The digest a verdict record names is the SHA-256 of the statement's canonical JS
 | `predicate.evidence_artifact.transcript_digest` | 64 lowercase hex | For `wire_transcript`: SHA-256 of the retained transcript bytes |
 | `predicate.evidence_artifact.vector` | string | For `wire_transcript`: `acs-conformance-vector:` and the first 16 hex characters of the vector digest |
 | `predicate.observed` | object | The disposition and reason codes the peer itself observed |
+| `predicate.verdict` | `pass`, `rejected`, `unmeasurable` or `quarantined` | The verdict the peer reached for this vector and requirement |
 | `predicate.checked_at` | RFC 3339 | When the peer checked |
 
 ## Verification
@@ -63,7 +64,11 @@ the refusal. Each refusal leaves the record at `SELF` or refuses it.
 | 7 | It names one of the two evidence kinds | `peer_artifact_unverified:no_evidence_artifact` |
 | 8 | A `client_run` names the record's deployment operator | `peer_artifact_unverified:wrong_deployment` |
 | 9 | A `wire_transcript` is held and its digest and vector match | `peer_artifact_unverified:transcript_not_supplied`, `:transcript_digest_mismatch` |
-| 10 | The peer observed what the record says was observed | `peer_disagrees` |
+| 10 | The peer observed what the record says was observed and reached the record's verdict | `peer_disagrees` |
+
+Step 10 binds the outcome. A statement names a vector, a requirement and evidence, and the
+same three hold for a second record about that vector. Without the verdict, one genuine
+statement would lift a record that reports a different result.
 
 A statement that passes every step lifts the record to the scope of the signing key's
 pinned relationship: `PEER` or `EXTERNAL`. A record that claims another scope is refused

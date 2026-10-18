@@ -52,8 +52,9 @@ Four rules are proposed here and are not yet in the draft text:
   `revert_to_unmeasurable`, so the expiry outcome cannot be edited in silence;
 - after `review_by` a quarantine record is `not_established` with `quarantine_overdue`,
   and the vector reads `unmeasurable`;
-- a peer statement carries what the peer observed, and a record whose peer saw something
-  else is refused with `peer_disagrees`.
+- a peer statement carries what the peer observed and the verdict it reached, and a record
+  whose peer saw something else, or that reuses one statement for another verdict, is
+  refused with `peer_disagrees`.
 
 ## What a supported case does not establish
 

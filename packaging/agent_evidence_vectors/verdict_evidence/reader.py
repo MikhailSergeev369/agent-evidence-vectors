@@ -38,7 +38,8 @@ Checks, in order, with the decision and reason of the first that fails:
    ``payload_digest_fields_incomplete``);
 9. ``witness_scope`` equals the scope derived from operator identifier
    equality and the verified peer statement (``witness_scope_misderived``,
-   ``peer_artifact_unverified:<step>``, ``peer_disagrees``).
+   ``peer_artifact_unverified:<step>``, ``peer_disagrees`` when the peer observed
+   something else or reached another verdict).
 
 A quarantine record (a predicate whose ``status`` is ``quarantined``) passes
 steps 1 to 5 and 7, then: every quarantine field is present
@@ -371,7 +372,8 @@ def _peer_lift(d: dict[str, Any], vector_digest: str, policy: dict[str, Any],
     if p.get("requirement") != d["anchor"] and "peer:requirement" not in skip:
         raise _peer_fail("wrong_requirement")
     _peer_evidence(p.get("evidence_artifact"), d, vector_digest, supplied.get("transcript"), skip)
-    if p.get("observed") != d["observed"] and "peer:agrees" not in skip:
+    if (p.get("observed") != d["observed"] or p.get("verdict") != d["verdict"]) and (
+            "peer:agrees" not in skip):
         raise Refusal(CONTRADICTED, "peer_disagrees")
     relationship = peer_keys.get(signer, {}).get("relationship") if signer else None
     return RELATIONSHIPS.get(str(relationship), "PEER")
