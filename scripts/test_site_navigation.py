@@ -136,6 +136,7 @@ def repository(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         "spec/predicates/adversarial-execution-evidence.md",
         "spec/schemas/observed-effect-code-digest-v0.5.schema.json",
         "spec/schemas/observed-effect-invocation-binding-v0.9.schema.json",
+        "packaging/agent_evidence_vectors/verdict_evidence/README.md",
     ):
         target = tmp_path / relative
         target.parent.mkdir(parents=True, exist_ok=True)
