@@ -27,7 +27,7 @@ Install matching published versions:
 
 ```bash
 go install github.com/probityai/agent-evidence-vectors/cmd/aee-verify@v0.19.0
-uvx agent-evidence-vectors==0.19.0 --verifier "aee-verify --json"
+uvx agent-evidence-vectors==0.20.0 --verifier "aee-verify --json"
 ```
 
 Run the same harness from the published release checkout:
@@ -38,7 +38,7 @@ cd agent-evidence-vectors && git checkout v0.19.0
 python3 packaging/run_vectors.py --verifier "aee-verify --json"
 ```
 
-The [runner guide](docs/guides/runner.md) covers the GitHub Action, its inputs and report fields. [Probity Admission](https://github.com/probityai/agent-evidence-admission) uses pinned corpora to check policy-engine enforcement.
+The [runner guide](docs/guides/runner.md) covers the GitHub Action, its inputs and report fields. [Probity Admission](https://github.com/probityai/agent-evidence/tree/main/packages/admission) uses pinned corpora to check policy-engine enforcement.
 
 If your verifier disagrees with a vector, [report the run](docs/guides/report-run.md) with its source revision and report. We can then check the verifier and the fixture against the same specification.
 

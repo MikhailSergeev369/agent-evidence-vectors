@@ -2314,9 +2314,9 @@ the wire, on the corpus and on every published conformance record:
     validity on the value of a producer-defined member, which the same
     implementation's own design document already forbade.
 
-[ResourceDescriptor]: ../v1/resource_descriptor.md
-[Runtime Traces]: runtime-trace.md
-[SCAI]: scai.md
-[SVR]: svr.md
-[Test Result]: test-result.md
-[VSA]: vsa.md
+[ResourceDescriptor]: https://github.com/in-toto/attestation/blob/main/spec/v1/resource_descriptor.md
+[Runtime Traces]: https://github.com/in-toto/attestation/blob/main/spec/predicates/runtime-trace.md
+[SCAI]: https://github.com/in-toto/attestation/blob/main/spec/predicates/scai.md
+[SVR]: https://github.com/in-toto/attestation/blob/main/spec/predicates/svr.md
+[Test Result]: https://github.com/in-toto/attestation/blob/main/spec/predicates/test-result.md
+[VSA]: https://github.com/in-toto/attestation/blob/main/spec/predicates/vsa.md

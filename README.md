@@ -13,7 +13,7 @@ The recording is `demo/four-arms.sh` from a fresh clone; `vhs demo/four-arms.tap
 Run every vector in the default corpus through the bundled reference verifier. You need Python 3.11+ and [uv](https://docs.astral.sh/uv/); there is nothing to clone or build, and a cold run takes about six seconds:
 
 ```bash
-uvx agent-evidence-vectors==0.19.0
+uvx agent-evidence-vectors==0.20.0
 ```
 
 At v0.19.0 the default corpus is suiteRevision 32, and the run prints one row per vector and ends with:
@@ -25,7 +25,7 @@ Now run the same corpus against a verifier other than the reference. The Go refe
 
 ```bash
 go install github.com/probityai/agent-evidence-vectors/cmd/aee-verify@v0.19.0
-uvx agent-evidence-vectors==0.19.0 --verifier "aee-verify --json"
+uvx agent-evidence-vectors==0.20.0 --verifier "aee-verify --json"
 ```
 
 Open `conformance-report.json` for the per-vector results. A complete external run has `rail: external`, `verifier.vectorsExecuted` equal to `totals.vectors`, and zero `totals.suiteRefusals`. The report separates conformance from reason-code agreement. `--list-corpora` names the other shipped corpora and `--corpus <name>` selects one.
