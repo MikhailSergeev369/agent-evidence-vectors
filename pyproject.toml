@@ -54,6 +54,10 @@ agent-evidence-vectors-remora-e7 = "agent_evidence_vectors.remora_e7.run:main"
 # request and decision correspondence, observed effect), with its frozen corpus.
 agent-evidence-vectors-invocation-axes = "agent_evidence_vectors.invocation_axes.run:main"
 
+# The ACS conformance verdict evidence controls: peer-authored scope lifts and
+# bound quarantine records, with an external-verifier contract.
+agent-evidence-vectors-verdict-evidence = "agent_evidence_vectors.verdict_evidence.run:main"
+
 [build-system]
 requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
